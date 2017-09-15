@@ -1,13 +1,17 @@
-import Html exposing (..)
+import Dom
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Events.Extra exposing (onEnter)
-import Dict
-import Random.Pcg as Random
-import Time exposing (Time)
-import AnimationFrame
+import Html exposing (..)
+import Task
 
+import AnimationFrame
+import Time exposing (Time)
+
+import Dict
 import Markov
+import Random.Pcg as Random
+
 
 type alias Model =
   { babbles : Markov.Model Char
@@ -18,7 +22,8 @@ type alias Model =
   , voice : String }
 
 type Msg
-  = TrackInput String
+  = Idle
+  | TrackInput String
   | Feed
   | Babble
   | Speak
@@ -50,7 +55,8 @@ inputArea model = div [] <|
   if model.hatched
     then
       [ textarea
-        [ onInput TrackInput
+        [ id "plate"
+        , onInput TrackInput
         , placeholder "feed paragraphs"
         , value model.meal
         , disabled <| model.eating /= Nothing ]
@@ -60,11 +66,13 @@ inputArea model = div [] <|
         [text "Feed!"] ]
     else
       [ input
-        [ onInput TrackInput
+        [ id "plate"
+        , onInput TrackInput
         , onEnter Feed
         , placeholder "feed words"
         , value model.meal
-        , disabled <| model.eating /= Nothing ]
+        , disabled <| model.eating /= Nothing
+        , autofocus True ]
         [] ]
 
 speechBox : Model -> Html Msg
@@ -72,6 +80,7 @@ speechBox model = p [] [text model.voice]
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
+  Idle -> model ! []
   TrackInput text ->
     { model | meal = text } ! []
   Feed ->
@@ -95,7 +104,7 @@ update msg model = case msg of
                   then Nothing
                   else Just <| 100 * Time.millisecond }
               ! if done
-                then [babble model]
+                then [babble model, refocusPlate]
                 else []
           else { model | eating = Just <| timer - diff } ! []
   Babble ->
@@ -118,3 +127,6 @@ speak = sample 2 (String.join "") << .speech
 
 sample : Int -> (List comparable -> String) -> Markov.Model comparable -> Cmd Msg
 sample n k = Random.generate (Display << k) << Markov.walk n
+
+refocusPlate : Cmd Msg
+refocusPlate = Task.attempt (always Idle) <| Dom.focus "plate"
