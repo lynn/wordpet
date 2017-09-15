@@ -23,7 +23,7 @@ type alias Model =
   , hatched : Bool
   , babbleTimer : Int
   , meal : String
-  , eating : Maybe Time
+  , eatingTimer : Maybe Time
   , voice : String }
 
 type Msg
@@ -53,7 +53,7 @@ initialModel =
   , hatched = False
   , babbleTimer = 10
   , meal = ""
-  , eating = Nothing
+  , eatingTimer = Nothing
   , voice = "" }
 
 view : Model -> Html Msg
@@ -63,17 +63,18 @@ view model = div []
 
 inputArea : Model -> Html Msg
 inputArea model = div [] <|
-  if model.hatched
+  let whenEating = Maybe.isJust model.eatingTimer
+  in if model.hatched
     then
       [ textarea
         [ id "plate"
         , onInput TrackInput
         , placeholder "feed paragraphs"
         , value model.meal
-        , disabled <| model.eating /= Nothing ]
+        , disabled whenEating ]
         []
       , button
-        [onClick Feed, disabled (String.isEmpty model.meal)]
+        [onClick Feed, disabled <| whenEating || String.isEmpty model.meal]
         [text "Feed!"] ]
     else
       [ input
@@ -82,7 +83,7 @@ inputArea model = div [] <|
         , onEnter Feed
         , placeholder "feed words"
         , value model.meal
-        , disabled <| model.eating /= Nothing
+        , disabled whenEating
         , autofocus True ]
         [] ]
 
@@ -99,12 +100,12 @@ update msg model = case msg of
       then model ! [] -- TODO give some sort of feedback?
       else
         { model
-          | eating = Just 0
+          | eatingTimer = Just 0
           , babbles = Markov.addSample 1 (String.toList model.meal) model.babbles
           , babbleTimer = model.babbleTimer - 1 }
         ! []
   ChompTick diff ->
-    case model.eating of
+    case model.eatingTimer of
       Nothing -> model ! []
       Just timer ->
         if timer <= 0
@@ -115,14 +116,15 @@ update msg model = case msg of
             in
               { model
                 | meal = remaining
-                , eating = if done
+                , eatingTimer = if done
                   then Nothing
                   else Just <| 100 * Time.millisecond
-                , voice = if done then "" else "♫" }
+                , voice = if done then "" else "♫"
+                , hatched = model.hatched || (done && model.babbleTimer == 0) }
               ! if done
                 then [refocusPlate, maybeBabble model]
                 else []
-          else { model | eating = Just <| timer - diff } ! []
+          else { model | eatingTimer = Just <| timer - diff } ! []
   Babble ->
     model ! [babble model]
   Speak ->
@@ -142,7 +144,7 @@ subscriptions model =
     when cond sub = if cond then sub else Sub.none
   in Sub.batch
     -- Listen to chomp ticks so long as we're eating words.
-    [ when (Maybe.isJust model.eating) (AnimationFrame.diffs ChompTick)
+    [ when (Maybe.isJust model.eatingTimer) (AnimationFrame.diffs ChompTick)
     -- Always listen to Compromise ports.
     , Compromise.receiveSentences ReceivedSentences
     , Compromise.receiveNormalize ReceivedNormalize ]
