@@ -21,6 +21,7 @@ type alias Model =
   { babbles : Markov.Model Char
   , speech  : Markov.Model String
   , hatched : Bool
+  , babbleTimer : Int
   , meal : String
   , eating : Maybe Time
   , voice : String }
@@ -33,6 +34,7 @@ type Msg
   | Speak
   | Display String
   | ChompTick Time
+  | ResetBabbleTimer Int
   -- NLP ports
   | ReceivedSentences (List String)
   | ReceivedNormalize String
@@ -49,6 +51,7 @@ initialModel =
   { babbles = Dict.empty
   , speech  = Dict.empty
   , hatched = False
+  , babbleTimer = 10
   , meal = ""
   , eating = Nothing
   , voice = "" }
@@ -97,7 +100,8 @@ update msg model = case msg of
       else
         { model
           | eating = Just 0
-          , babbles = Markov.addSample 1 (String.toList model.meal) model.babbles }
+          , babbles = Markov.addSample 1 (String.toList model.meal) model.babbles
+          , babbleTimer = model.babbleTimer - 1 }
         ! []
   ChompTick diff ->
     case model.eating of
@@ -113,9 +117,10 @@ update msg model = case msg of
                 | meal = remaining
                 , eating = if done
                   then Nothing
-                  else Just <| 100 * Time.millisecond }
+                  else Just <| 100 * Time.millisecond
+                , voice = if done then "" else "♫" }
               ! if done
-                then [babble model, refocusPlate]
+                then [refocusPlate, maybeBabble model]
                 else []
           else { model | eating = Just <| timer - diff } ! []
   Babble ->
@@ -124,6 +129,8 @@ update msg model = case msg of
     model ! [speak model]
   Display text ->
     { model | voice = text } ! []
+  ResetBabbleTimer t ->
+    { model | babbleTimer = t } ! []
   ReceivedSentences sentences ->
     Debug.log (toString sentences) model ! [] -- TODO
   ReceivedNormalize normalizedText ->
@@ -141,7 +148,9 @@ subscriptions model =
     , Compromise.receiveNormalize ReceivedNormalize ]
 
 babble : Model -> Cmd Msg
-babble = sample 1 String.fromList << .babbles
+babble model = Cmd.batch
+  [ sample 1 String.fromList model.babbles
+  , Random.generate ResetBabbleTimer <| Random.int 10 25 ]
 
 speak : Model -> Cmd Msg
 speak = sample 2 (String.join "") << .speech
@@ -151,3 +160,8 @@ sample n k = Random.generate (Display << k) << Markov.walk n
 
 refocusPlate : Cmd Msg
 refocusPlate = Task.attempt (always Idle) <| Dom.focus "plate"
+
+maybeBabble : Model -> Cmd Msg
+maybeBabble model = if model.babbleTimer == 0
+  then babble model
+  else Cmd.none
