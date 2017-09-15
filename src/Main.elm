@@ -92,10 +92,13 @@ update msg model = case msg of
   TrackInput text ->
     { model | meal = text } ! []
   Feed ->
-    { model
-      | eating = Just 0
-      , babbles = Markov.addSample 1 (String.toList model.meal) model.babbles }
-    ! []
+    if String.isEmpty model.meal
+      then model ! [] -- TODO give some sort of feedback?
+      else
+        { model
+          | eating = Just 0
+          , babbles = Markov.addSample 1 (String.toList model.meal) model.babbles }
+        ! []
   ChompTick diff ->
     case model.eating of
       Nothing -> model ! []
