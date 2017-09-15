@@ -99,7 +99,9 @@ update msg model = case msg of
     { model | voice = text } ! []
 
 subscriptions : Model -> Sub Msg
-subscriptions model = AnimationFrame.diffs ChompTick
+subscriptions model = if model.eating == Nothing
+  then Sub.none
+  else AnimationFrame.diffs ChompTick
 
 sample : Int -> (List comparable -> String) -> Markov.Model comparable -> Cmd Msg
 sample n k = Random.generate (Display << k) << Markov.walk n
