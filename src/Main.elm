@@ -75,7 +75,10 @@ update msg model = case msg of
   TrackInput text ->
     { model | meal = text } ! []
   Feed ->
-    { model | eating = Just 0 } ! []
+    { model
+      | eating = Just 0
+      , babbles = Markov.addSample 1 (String.toList model.meal) model.babbles }
+    ! []
   ChompTick diff ->
     case model.eating of
       Nothing -> model ! []
@@ -84,17 +87,21 @@ update msg model = case msg of
           then
             let
               remaining = String.dropLeft 1 model.meal
+              done = String.isEmpty remaining
             in
               { model
                 | meal = remaining
-                , eating = if String.isEmpty remaining
+                , eating = if done
                   then Nothing
-                  else Just <| 100 * Time.millisecond } ! []
+                  else Just <| 100 * Time.millisecond }
+              ! if done
+                then [babble model]
+                else []
           else { model | eating = Just <| timer - diff } ! []
   Babble ->
-    model ! [sample 1 String.fromList model.babbles]
+    model ! [babble model]
   Speak ->
-    model ! [sample 2 (String.join "") model.speech]
+    model ! [speak model]
   Display text ->
     { model | voice = text } ! []
 
@@ -102,6 +109,12 @@ subscriptions : Model -> Sub Msg
 subscriptions model = if model.eating == Nothing
   then Sub.none
   else AnimationFrame.diffs ChompTick
+
+babble : Model -> Cmd Msg
+babble = sample 1 String.fromList << .babbles
+
+speak : Model -> Cmd Msg
+speak = sample 2 (String.join "") << .speech
 
 sample : Int -> (List comparable -> String) -> Markov.Model comparable -> Cmd Msg
 sample n k = Random.generate (Display << k) << Markov.walk n
