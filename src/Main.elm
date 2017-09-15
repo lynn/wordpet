@@ -4,6 +4,8 @@ import Html.Events exposing (..)
 import Html.Events.Extra exposing (onEnter)
 import Dict
 import Random.Pcg as Random
+import Time exposing (Time)
+import AnimationFrame
 
 import Markov
 
@@ -12,7 +14,7 @@ type alias Model =
   , speech  : Markov.Model String
   , hatched : Bool
   , meal : String
-  , eating : Bool
+  , eating : Maybe Time
   , voice : String }
 
 type Msg
@@ -21,6 +23,7 @@ type Msg
   | Babble
   | Speak
   | Display String
+  | ChompTick Time
 
 main = program
   { init = initialModel ! []
@@ -34,7 +37,7 @@ initialModel =
   , speech  = Dict.empty
   , hatched = False
   , meal = ""
-  , eating = False
+  , eating = Nothing
   , voice = "" }
 
 view : Model -> Html Msg
@@ -50,7 +53,7 @@ inputArea model = div [] <|
         [ onInput TrackInput
         , placeholder "feed paragraphs"
         , value model.meal
-        , disabled model.eating ]
+        , disabled <| model.eating /= Nothing ]
         []
       , button
         [onClick Feed, disabled (String.isEmpty model.meal)]
@@ -61,7 +64,7 @@ inputArea model = div [] <|
         , onEnter Feed
         , placeholder "feed words"
         , value model.meal
-        , disabled model.eating ]
+        , disabled <| model.eating /= Nothing ]
         [] ]
 
 speechBox : Model -> Html Msg
@@ -72,7 +75,22 @@ update msg model = case msg of
   TrackInput text ->
     { model | meal = text } ! []
   Feed ->
-    { model | eating = True } ! []
+    { model | eating = Just 0 } ! []
+  ChompTick diff ->
+    case model.eating of
+      Nothing -> model ! []
+      Just timer ->
+        if timer <= 0
+          then
+            let
+              remaining = String.dropLeft 1 model.meal
+            in
+              { model
+                | meal = remaining
+                , eating = if String.isEmpty remaining
+                  then Nothing
+                  else Just <| 100 * Time.millisecond } ! []
+          else { model | eating = Just <| timer - diff } ! []
   Babble ->
     model ! [sample 1 String.fromList model.babbles]
   Speak ->
@@ -81,7 +99,7 @@ update msg model = case msg of
     { model | voice = text } ! []
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+subscriptions model = AnimationFrame.diffs ChompTick
 
 sample : Int -> (List comparable -> String) -> Markov.Model comparable -> Cmd Msg
 sample n k = Random.generate (Display << k) << Markov.walk n
