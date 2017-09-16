@@ -90,6 +90,25 @@ inputArea model = div [] <|
 speechBox : Model -> Html Msg
 speechBox model = p [] [text model.voice]
 
+-- Take a bite out of the meal, and reset the eatingTimer if we're not done eating.
+-- If we are done eating, chirp, refocus the plate, and maybe babble.
+chomp : Model -> (Model, Cmd Msg)
+chomp model =
+  let
+    remaining = String.dropLeft 1 model.meal
+    done = String.isEmpty remaining
+  in
+    { model
+      | meal = remaining
+      , eatingTimer = if done
+        then Nothing
+        else Just <| 100 * Time.millisecond
+      , voice = if done then "" else "♫"
+      , hatched = model.hatched || (done && model.babbleTimer == 0) }
+    ! if done
+      then [refocusPlate, maybeBabble model]
+      else []
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
   Idle -> model ! []
@@ -109,22 +128,8 @@ update msg model = case msg of
       Nothing -> model ! []
       Just timer ->
         if timer <= 0
-          then
-            let
-              remaining = String.dropLeft 1 model.meal
-              done = String.isEmpty remaining
-            in
-              { model
-                | meal = remaining
-                , eatingTimer = if done
-                  then Nothing
-                  else Just <| 100 * Time.millisecond
-                , voice = if done then "" else "♫"
-                , hatched = model.hatched || (done && model.babbleTimer == 0) }
-              ! if done
-                then [refocusPlate, maybeBabble model]
-                else []
-          else { model | eatingTimer = Just <| timer - diff } ! []
+          then chomp model
+          else { model | eatingTimer = Just (timer - diff) } ! []
   Babble ->
     model ! [babble model]
   Speak ->
