@@ -5,3 +5,4 @@ repl-temp-*
 
 # elm-make output
 main.js
+view.js
