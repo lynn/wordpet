@@ -20,7 +20,7 @@ import Maybe.Extra as Maybe
 type alias Model =
   { babbles : Markov.Model Char
   , speech  : Markov.Model String
-  , hatched : Bool
+  , hatched : Maybe String -- name when hatched
   , babbleTimer : Int
   , meal : String
   , eatingTimer : Maybe Time
@@ -30,9 +30,8 @@ type Msg
   = Idle
   | TrackInput String
   | Feed
-  | Babble
-  | Speak
-  | Display String
+  | Babble String
+  | Speak String
   | ChompTick Time
   | ResetBabbleTimer Int
   -- NLP ports
@@ -50,7 +49,7 @@ initialModel : Model
 initialModel =
   { babbles = Dict.empty
   , speech  = Dict.empty
-  , hatched = False
+  , hatched = Nothing
   , babbleTimer = 10
   , meal = ""
   , eatingTimer = Nothing
@@ -64,19 +63,8 @@ view model = div []
 inputArea : Model -> Html Msg
 inputArea model = div [] <|
   let whenEating = Maybe.isJust model.eatingTimer
-  in if model.hatched
-    then
-      [ textarea
-        [ id "plate"
-        , onInput TrackInput
-        , placeholder "feed paragraphs"
-        , value model.meal
-        , disabled whenEating ]
-        []
-      , button
-        [onClick Feed, disabled <| whenEating || String.isEmpty model.meal]
-        [text "Feed!"] ]
-    else
+  in case model.hatched of
+    Nothing ->
       [ input
         [ id "plate"
         , onInput TrackInput
@@ -86,6 +74,18 @@ inputArea model = div [] <|
         , disabled whenEating
         , autofocus True ]
         [] ]
+    Just name ->
+      [ span [] [text name]
+      , textarea
+        [ id "plate"
+        , onInput TrackInput
+        , placeholder "feed paragraphs"
+        , value model.meal
+        , disabled whenEating ]
+        []
+      , button
+        [onClick Feed, disabled <| whenEating || String.isEmpty model.meal]
+        [text "Feed!"] ]
 
 speechBox : Model -> Html Msg
 speechBox model = p [] [text model.voice]
@@ -103,8 +103,7 @@ chomp model =
       , eatingTimer = if done
         then Nothing
         else Just <| 100 * Time.millisecond
-      , voice = if done then "" else "♫"
-      , hatched = model.hatched || (done && model.babbleTimer == 0) }
+      , voice = if done then "" else "♫" }
     ! if done
       then [refocusPlate, maybeBabble model]
       else []
@@ -130,12 +129,10 @@ update msg model = case msg of
         if timer <= 0
           then chomp model
           else { model | eatingTimer = Just (timer - diff) } ! []
-  Babble ->
-    model ! [babble model]
-  Speak ->
-    model ! [speak model]
-  Display text ->
-    { model | voice = text } ! []
+  Babble bab ->
+    maybeHatch bab { model | voice = bab } ! []
+  Speak speech ->
+    { model | voice = speech } ! []
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
   ReceivedSentences sentences ->
@@ -156,14 +153,21 @@ subscriptions model =
 
 babble : Model -> Cmd Msg
 babble model = Cmd.batch
-  [ sample 1 String.fromList model.babbles
+  [ sample 1 (Babble << String.fromList) model.babbles
   , Random.generate ResetBabbleTimer <| Random.int 10 25 ]
 
-speak : Model -> Cmd Msg
-speak = sample 2 (String.join "") << .speech
+-- the first time we babble, hatch and set our name to our first word
+maybeHatch : String -> Model -> Model
+maybeHatch bab model =
+  case model.hatched of
+    Just _ -> model
+    Nothing -> { model | hatched = Just bab }
 
-sample : Int -> (List comparable -> String) -> Markov.Model comparable -> Cmd Msg
-sample n k = Random.generate (Display << k) << Markov.walk n
+speak : Model -> Cmd Msg
+speak = sample 2 (Speak << String.join "") << .speech
+
+sample : Int -> (List comparable -> Msg) -> Markov.Model comparable -> Cmd Msg
+sample n k = Random.generate k << Markov.walk n
 
 refocusPlate : Cmd Msg
 refocusPlate = Task.attempt (always Idle) <| Dom.focus "plate"
