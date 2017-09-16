@@ -30,6 +30,7 @@ type Msg
   = Idle
   | TrackInput String
   | Feed
+  | Pet
   | Babble String
   | Speak String
   | ChompTick Time
@@ -58,7 +59,8 @@ initialModel =
 view : Model -> Html Msg
 view model = div []
   [ inputArea model
-  , speechBox model ]
+  , speechBox model
+  , petButton model ]
 
 inputArea : Model -> Html Msg
 inputArea model = div [] <|
@@ -108,6 +110,11 @@ chomp model =
       then [refocusPlate, maybeBabble model]
       else []
 
+petButton : Model -> Html Msg
+petButton model = button
+  [ onClick Pet, disabled <| Maybe.isJust model.eatingTimer ]
+  [ text "Pet!" ]
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
   Idle -> model ! []
@@ -116,12 +123,10 @@ update msg model = case msg of
   Feed ->
     if String.isEmpty model.meal
       then model ! [] -- TODO give some sort of feedback?
-      else
+      else train
         { model
           | eatingTimer = Just 0
-          , babbles = Markov.addSample 1 (String.toList model.meal) model.babbles
           , babbleTimer = model.babbleTimer - 1 }
-        ! []
   ChompTick diff ->
     case model.eatingTimer of
       Nothing -> model ! []
@@ -129,6 +134,10 @@ update msg model = case msg of
         if timer <= 0
           then chomp model
           else { model | eatingTimer = Just (timer - diff) } ! []
+  Pet ->
+    if Maybe.isJust model.hatched
+      then { model | babbleTimer = model.babbleTimer - 1 } ! [speak model]
+      else model ! [] -- TODO: some sort of feedback for petting the egg
   Babble bab ->
     maybeHatch bab { model | voice = bab } ! []
   Speak speech ->
@@ -136,7 +145,7 @@ update msg model = case msg of
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
   ReceivedSentences sentences ->
-    Debug.log (toString sentences) model ! [] -- TODO
+    trainSpeech sentences model ! []
   ReceivedNormalize normalizedText ->
     Debug.log (toString normalizedText) model ! [] -- TODO
 
@@ -163,9 +172,6 @@ maybeHatch bab model =
     Just _ -> model
     Nothing -> { model | hatched = Just bab }
 
-speak : Model -> Cmd Msg
-speak = sample 2 (Speak << String.join "") << .speech
-
 sample : Int -> (List comparable -> Msg) -> Markov.Model comparable -> Cmd Msg
 sample n k = Random.generate k << Markov.walk n
 
@@ -176,3 +182,30 @@ maybeBabble : Model -> Cmd Msg
 maybeBabble model = if model.babbleTimer == 0
   then babble model
   else Cmd.none
+
+speak : Model -> Cmd Msg
+speak model = if model.babbleTimer == 0 || Dict.isEmpty model.speech
+  then babble model
+  else sample 2 (Speak << String.join " ") model.speech
+
+train : Model -> (Model, Cmd Msg)
+train model = case model.hatched of
+  Nothing ->
+    -- not yet hatched! train the babble model
+    { model
+      | babbles = Markov.addSample 1 (String.toList model.meal) model.babbles }
+    ! []
+  Just _ ->
+    -- hatched! train the speech model.
+    -- first we need to split the meal into sentences
+    model ! [Compromise.sentences model.meal]
+
+-- train the speech model
+-- TODO: need to normalize first
+trainSpeech : List String -> Model -> Model
+trainSpeech sentences model =
+  let
+    addSentence sentence = Markov.addSample 2 (String.split " " sentence)
+  in
+    { model
+      | speech = List.foldl addSentence model.speech sentences }

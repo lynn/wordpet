@@ -45,10 +45,7 @@ markTally word tally =
 windows : Int -> List word -> List (Ngram word, Maybe word)
 windows n words =
   let
-    initial = List.inits words
-      |> List.drop 1
-      |> List.map2 List.splitAt (List.range 0 (n - 1))
-      |> List.map format
+    initial = List.map (format << flip List.splitAt words) (List.range 0 (n - 1))
 
     midsample = List.tails words
       |> List.map (format << List.splitAt n << List.take (n + 1))
@@ -89,8 +86,11 @@ step : Int -> Model comparable -> Ngram comparable
   -> Generator (Maybe (comparable, Ngram comparable))
 step n model ngram =
   let
-    tally = withDefaultTally compareMaybes <| Dict.get ngram model
-    slide next = (next, List.take (n - 1) ngram ++ [next])
+    tally = case Dict.get ngram model of
+      Just t -> t
+      Nothing -> Debug.crash "also shouldn't happen!"
+    slideAmount = max 0 (List.length ngram - n + 1)
+    slide next = (next, List.drop slideAmount ngram ++ [next])
   in
     Random.map (Maybe.map slide) <| pickWord tally
 
