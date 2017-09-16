@@ -14,4 +14,9 @@
         var output = nlp(text).out('root');
         app.ports.receiveNormalize.send(output);
     });
+    app.ports.playOneOf.subscribe(function(paths) {
+        console.log(path);
+        var path = paths[Math.floor(Math.random() * paths.length)];
+        new Audio(path).play();
+    });
 </script>
