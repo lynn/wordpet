@@ -61,7 +61,7 @@ critterLayer palette part =
     [ width (px 300)
     , height (px 240)
     , inlineStyle
-      [ ("background-image", "url('../assets/critter/" ++ palette ++ "/" ++ part ++ ".png')")
+      [ ("background-image", "url('assets/critter/" ++ palette ++ "/" ++ part ++ ".png')")
       , ("background-size", "100%")
       , ("image-rendering", "pixelated")
       ]
