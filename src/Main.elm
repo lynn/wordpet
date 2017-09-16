@@ -12,6 +12,10 @@ import Dict
 import Markov
 import Random.Pcg as Random
 
+import Compromise
+import Debug
+import Maybe.Extra as Maybe
+
 
 type alias Model =
   { babbles : Markov.Model Char
@@ -29,7 +33,11 @@ type Msg
   | Speak
   | Display String
   | ChompTick Time
+  -- NLP ports
+  | ReceivedSentences (List String)
+  | ReceivedNormalize String
 
+main : Program Never Model Msg
 main = program
   { init = initialModel ! []
   , view = view
@@ -113,11 +121,21 @@ update msg model = case msg of
     model ! [speak model]
   Display text ->
     { model | voice = text } ! []
+  ReceivedSentences sentences ->
+    Debug.log (toString sentences) model ! [] -- TODO
+  ReceivedNormalize normalizedText ->
+    Debug.log (toString normalizedText) model ! [] -- TODO
 
 subscriptions : Model -> Sub Msg
-subscriptions model = if model.eating == Nothing
-  then Sub.none
-  else AnimationFrame.diffs ChompTick
+subscriptions model =
+  let
+    when cond sub = if cond then sub else Sub.none
+  in Sub.batch
+    -- Listen to chomp ticks so long as we're eating words.
+    [ when (Maybe.isJust model.eating) (AnimationFrame.diffs ChompTick)
+    -- Always listen to Compromise ports.
+    , Compromise.receiveSentences ReceivedSentences
+    , Compromise.receiveNormalize ReceivedNormalize ]
 
 babble : Model -> Cmd Msg
 babble = sample 1 String.fromList << .babbles
