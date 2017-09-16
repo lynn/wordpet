@@ -1,7 +1,9 @@
 module Markov exposing (Model, addSample, walk)
 
 import Dict exposing (Dict)
+import GenericDict as GDict exposing (GenericDict)
 import List.Extra as List
+import Maybe.Extra as Maybe
 import Random.Pcg as Random exposing (Generator)
 import Debug
 
@@ -9,38 +11,35 @@ import Debug
 type alias Ngram a = List a
 
 -- model: given an n-gram of words, how frequently does each possible
--- next word occur?
-type alias Model word = Dict (Ngram word) (Tally word)
+-- next word (or end of sample) occur?
+type alias Model word = Dict (Ngram word) (Tally (Maybe word))
 
--- tally: what is the frequency of each next occurring word, and also how
--- frequently do we end here (no next word)
+-- tally: store frequency distribution of words, for random sampling
 type alias Tally word =
-  { wordTally : Dict word Int
-  , endTally : Int
+  { wordTally : GenericDict word Int
   , total : Int }
 
 
-blankTally =
-  { wordTally = Dict.empty
-  , endTally = 0
+blankTally : (word -> word -> Order) -> Tally word
+blankTally comparison =
+  { wordTally = GDict.empty comparison
   , total = 0 }
 
+withDefaultTally : (word -> word -> Order) -> Maybe (Tally word) -> Tally word
+withDefaultTally = Maybe.withDefault << blankTally
+
+compareMaybes : Maybe comparable -> Maybe comparable -> Order
+compareMaybes a b = compare (Maybe.toList a) (Maybe.toList b)
+
 -- add a tally mark for a given word!
-markTally : Maybe comparable -> Tally comparable -> Tally comparable
-markTally item tally = case item of
-  Nothing ->
+markTally : word -> Tally word -> Tally word
+markTally word tally =
+  let
+    addTally count = Just <| Maybe.withDefault 0 count + 1
+  in
     { tally
-      | endTally = tally.endTally + 1
+      | wordTally = GDict.update word addTally tally.wordTally
       , total = tally.total + 1 }
-  Just word ->
-    let
-      addTally count = case count of
-        Nothing -> Just 1
-        Just n  -> Just (n + 1)
-    in
-      { tally
-        | wordTally = Dict.update word addTally tally.wordTally
-        , total = tally.total + 1 }
 
 -- slice up a sample into (n+1)-grams for tallying
 windows : Int -> List word -> List (Ngram word, Maybe word)
@@ -65,17 +64,16 @@ addSample : Int -> List comparable -> Model comparable -> Model comparable
 addSample n words model =
   let
     tally (ngram, next) =
-      Dict.update ngram (Just << markTally next << Maybe.withDefault blankTally)
+      Dict.update ngram (Just << markTally next << withDefaultTally compareMaybes)
   in
     List.foldl tally model (windows n words)
 
 
 -- random word generator using the distribution given by a Tally
-pickWord : Tally comparable -> Generator (Maybe comparable)
+pickWord : Tally word -> Generator word
 pickWord tally =
   let
-    frequencies = (Nothing, tally.endTally)
-      :: List.map (Tuple.mapFirst Just) (Dict.toList tally.wordTally)
+    frequencies = GDict.toList tally.wordTally
 
     pickWith wordcounts index = case wordcounts of
       ((word, count) :: tail) ->
@@ -91,7 +89,7 @@ step : Int -> Model comparable -> Ngram comparable
   -> Generator (Maybe (comparable, Ngram comparable))
 step n model ngram =
   let
-    tally = Maybe.withDefault blankTally <| Dict.get ngram model
+    tally = withDefaultTally compareMaybes <| Dict.get ngram model
     slide next = (next, List.take (n - 1) ngram ++ [next])
   in
     Random.map (Maybe.map slide) <| pickWord tally
