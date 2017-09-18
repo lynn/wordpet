@@ -1,3 +1,4 @@
+import Random.Pcg as Random exposing (Generator)
 import Html exposing (..)
 
 import AnimationFrame
@@ -6,6 +7,7 @@ import ChompAnimation
 import Speech
 
 import Compromise
+import Critter
 import Debug
 import Maybe.Extra as Maybe
 import Util
@@ -19,7 +21,7 @@ import View
 
 main : Program Never Model Msg
 main = program
-  { init = Model.initial ! []
+  { init = Model.initial ! [Random.generate SetCritter Critter.generator]
   , view = View.view
   , update = update
   , subscriptions = subscriptions }
@@ -45,6 +47,8 @@ update msg model = case msg of
     { model | voice = speech } ! []
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
+  SetCritter c ->
+    { model | critter = c } ! []
   ReceivedSentences sentences ->
     Speech.trainSpeech sentences model ! []
   ReceivedNormalize normalizedText ->

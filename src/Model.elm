@@ -1,11 +1,13 @@
 module Model exposing (Model, initial)
 
+import Critter exposing (Critter)
 import Dict
 import Markov
 import Time exposing (Time)
 
 type alias Model =
-  { babbles : Markov.Model Char
+  { critter : Critter
+  , babbles : Markov.Model Char
   , speech  : Markov.Model String
   , babbleTimer : Int
   , hatched : Maybe String -- name when hatched
@@ -15,7 +17,8 @@ type alias Model =
 
 initial : Model
 initial =
-  { babbles = Dict.empty
+  { critter = Critter.dummy
+  , babbles = Dict.empty
   , speech  = Dict.empty
   , babbleTimer = 10
   , hatched = Nothing

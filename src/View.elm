@@ -84,23 +84,21 @@ critterLayer palette part =
 
 
 -- A 300x240 element containing critterLayers stacked on top of each other.
-critter : Critter -> Element Styles v Msg
-critter c =
+critterElement : Critter -> Element Styles v Msg
+critterElement c =
   el None [ width (px 300), height (px 240) ] empty
     |> within (List.map (critterLayer c.palette) c.parts)
 
 
-exampleBabys : Model -> Element Styles v Msg
-exampleBabys model =
+renderCritter : Model -> Element Styles v Msg
+renderCritter model =
   let
-    parts = ["shadow0", "tail0", "tailtip0", "legs0", "wings0", "body0", "eyes0"]
-    blah = case model.eating of
-          Nothing -> identity
-          Just e -> Critter.eating e.timer
+    emote =
+      case model.eating of
+        Nothing -> identity
+        Just e -> Critter.eating e.timer
   in
-    [0, 1, 2, 3, 4, 5, 6, 7]
-      |> List.map (\i -> Random.step Critter.random (Random.initialSeed (i + 345783)) |> Tuple.first |> blah |> critter)
-      |> wrappedRow None [center, paddingTop 20]
+    critterElement (emote model.critter)
 
 
 -- TODO: this should actually take the model and use it.
@@ -112,5 +110,5 @@ view model =
       , html (OldView.inputArea model)
       , html (OldView.speechBox model)
       , html (OldView.petButton model)
-      , exampleBabys model
+      , renderCritter model
       ]
