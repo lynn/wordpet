@@ -57,13 +57,20 @@ windows n words =
 
 -- scan over a list of words and tally up word frequencies following each
 -- n-gram, for a given n, adding them to the transition table
-addSample : Int -> List comparable -> Model comparable -> Model comparable
-addSample n words model =
+addSample : Int -> (comparable -> comparable) -> List comparable
+  -> Model comparable -> Model comparable
+addSample n normalize words model =
   let
     tally (ngram, next) =
       Dict.update ngram (Just << markTally next << withDefaultTally compareMaybes)
+    -- normalize the n-gram used as keys, leaving the tallied word untouched
+    entries = windows n normalPairs
+      |> List.map
+        (  Tuple.mapFirst (List.map Tuple.first)
+        >> Tuple.mapSecond (Maybe.map Tuple.second) )
+    normalPairs = List.map (\ word -> (normalize word, word)) words
   in
-    List.foldl tally model (windows n words)
+    List.foldl tally model entries
 
 
 -- random word generator using the distribution given by a Tally
@@ -82,23 +89,24 @@ pickWord tally =
     Random.int 0 (tally.total - 1) |> Random.map (pickWith frequencies)
 
 -- generate the next word and get the next state from a given state
-step : Int -> Model comparable -> Ngram comparable
+step : Int -> (comparable -> comparable) -> Model comparable -> Ngram comparable
   -> Generator (Maybe (comparable, Ngram comparable))
-step n model ngram =
+step n normalize model ngram =
   let
     tally = case Dict.get ngram model of
       Just t -> t
       Nothing -> Debug.crash "also shouldn't happen!"
     slideAmount = max 0 (List.length ngram - n + 1)
-    slide next = (next, List.drop slideAmount ngram ++ [next])
+    slide next = (next, List.drop slideAmount ngram ++ [normalize next])
   in
     Random.map (Maybe.map slide) <| pickWord tally
 
 -- generate a whole sentence!! wow!!
-walk : Int -> Model comparable -> Generator (List comparable)
-walk n model =
+walk : Int -> (comparable -> comparable) -> Model comparable
+  -> Generator (List comparable)
+walk n normalize model =
   let
-    go ngram = step n model ngram |> Random.andThen continue
+    go ngram = step n normalize model ngram |> Random.andThen continue
 
     continue nextState = case nextState of
       Nothing -> Random.constant []
