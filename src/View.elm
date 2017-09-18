@@ -1,4 +1,4 @@
-module Main exposing (..)
+module View exposing (..)
 
 import Color
 import Element exposing (..)
@@ -9,6 +9,10 @@ import Style.Border as Border
 import Style.Color as Color
 import Style.Font as Font
 import String exposing (startsWith)
+
+import OldView
+import Model exposing (..)
+import Msg exposing (..)
 
 
 {-| The type we use for identifiers for our styles.
@@ -54,7 +58,7 @@ stylesheet =
 
 -- A 300x240 element with one layer of the critter set as the background image.
 -- Usage:  critterLayer "palette3" "body1"
-critterLayer : String -> String -> Element Styles v msg
+critterLayer : String -> String -> Element Styles v Msg
 critterLayer palette part =
   let
     wiggleAnim = "up4px 0.8s alternate infinite steps(2, end)"
@@ -77,13 +81,13 @@ critterLayer palette part =
 
 -- A 300x240 element containing critterLayers stacked on top of each other.
 -- Usage:  critter "palette0" ["tail0", "tailtip0", "body0", "eyes0"]
-critter : String -> List String -> Element Styles v msg
+critter : String -> List String -> Element Styles v Msg
 critter palette parts =
   el None [ width (px 300), height (px 240) ] empty
     |> within (List.map (critterLayer palette) parts)
 
 
-exampleBabys : Element Styles v msg
+exampleBabys : Element Styles v Msg
 exampleBabys =
   [0, 1, 2, 3, 4, 5, 6, 7]
     |> List.map (\i -> "palette" ++ toString i)
@@ -92,18 +96,13 @@ exampleBabys =
 
 
 -- TODO: this should actually take the model and use it.
-view : model -> Html msg
-view _ =
+view : Model -> Html Msg
+view model =
   Element.layout stylesheet <|
     full Main [center] <| column None [center] <|
       [ h1 H1 [paddingTop 20] (text "here are some babys to pet")
+      , html (OldView.inputArea model)
+      , html (OldView.speechBox model)
+      , html (OldView.petButton model)
       , exampleBabys
       ]
-
-main : Program Never number (number -> number)
-main =
-  Html.beginnerProgram
-    { model = 0
-    , update = (\x -> x)
-    , view = view
-    }

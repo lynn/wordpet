@@ -19,50 +19,15 @@ import Maybe.Extra as Maybe
 
 import Model exposing (Model)
 import Msg exposing (..)
+import View
 
 
 main : Program Never Model Msg
 main = program
   { init = Model.initial ! []
-  , view = view
+  , view = View.view
   , update = update
   , subscriptions = subscriptions }
-
-view : Model -> Html Msg
-view model = div []
-  [ inputArea model
-  , speechBox model
-  , petButton model ]
-
-inputArea : Model -> Html Msg
-inputArea model = div [] <|
-  let whenEating = Maybe.isJust model.eating
-  in case model.hatched of
-    Nothing ->
-      [ input
-        [ id "plate"
-        , onInput TrackInput
-        , onEnter Feed
-        , placeholder "feed words"
-        , value model.meal
-        , disabled whenEating
-        , autofocus True ]
-        [] ]
-    Just name ->
-      [ span [] [text name]
-      , textarea
-        [ id "plate"
-        , onInput TrackInput
-        , placeholder "feed paragraphs"
-        , value model.meal
-        , disabled whenEating ]
-        []
-      , button
-        [onClick Feed, disabled <| whenEating || String.isEmpty model.meal]
-        [text "Feed!"] ]
-
-speechBox : Model -> Html Msg
-speechBox model = p [] [text model.voice]
 
 -- Take a bite out of the meal, and reset the eatingTimer if we're not done eating.
 -- If we are done eating, chirp, refocus the plate, and maybe babble.
@@ -81,11 +46,6 @@ chomp chunkSize model =
     ! if done
       then [refocusPlate, maybeBabble model]
       else []
-
-petButton : Model -> Html Msg
-petButton model = button
-  [ onClick Pet, disabled <| Maybe.isJust model.eating ]
-  [ text "Pet!" ]
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
