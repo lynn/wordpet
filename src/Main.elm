@@ -1,4 +1,5 @@
 import Dom
+import Dom.Scroll
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Events.Extra exposing (onEnter)
@@ -183,6 +184,9 @@ sample n k = Random.generate k << Markov.walk n
 refocusPlate : Cmd Msg
 refocusPlate = Task.attempt (always Idle) <| Dom.focus "plate"
 
+scrollPlate : Cmd Msg
+scrollPlate = Task.attempt (always Idle) <| Dom.Scroll.toTop "plate"
+
 maybeBabble : Model -> Cmd Msg
 maybeBabble model = if model.babbleTimer == 0
   then babble model
@@ -202,8 +206,9 @@ train model = case model.hatched of
     ! []
   Just _ ->
     -- hatched! train the speech model.
-    -- first we need to split the meal into sentences
-    model ! [Compromise.sentences model.meal]
+    -- first we need to split the meal into sentences.
+    -- also scroll the text entry to the top so the chomps are visible
+    model ! [scrollPlate, Compromise.sentences model.meal]
 
 -- train the speech model
 -- TODO: need to normalize first
