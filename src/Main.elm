@@ -23,7 +23,7 @@ type alias Model =
   , hatched : Maybe String -- name when hatched
   , babbleTimer : Int
   , meal : String
-  , eatingTimer : Maybe Time
+  , eating : Maybe { timer : Time, chunkSize : Int }
   , voice : String }
 
 type Msg
@@ -53,7 +53,7 @@ initialModel =
   , hatched = Nothing
   , babbleTimer = 10
   , meal = ""
-  , eatingTimer = Nothing
+  , eating = Nothing
   , voice = "" }
 
 view : Model -> Html Msg
@@ -64,7 +64,7 @@ view model = div []
 
 inputArea : Model -> Html Msg
 inputArea model = div [] <|
-  let whenEating = Maybe.isJust model.eatingTimer
+  let whenEating = Maybe.isJust model.eating
   in case model.hatched of
     Nothing ->
       [ input
@@ -94,17 +94,17 @@ speechBox model = p [] [text model.voice]
 
 -- Take a bite out of the meal, and reset the eatingTimer if we're not done eating.
 -- If we are done eating, chirp, refocus the plate, and maybe babble.
-chomp : Model -> (Model, Cmd Msg)
-chomp model =
+chomp : Int -> Model -> (Model, Cmd Msg)
+chomp chunkSize model =
   let
-    remaining = String.dropLeft 1 model.meal
+    remaining = String.dropLeft chunkSize model.meal
     done = String.isEmpty remaining
   in
     { model
       | meal = remaining
-      , eatingTimer = if done
+      , eating = if done
         then Nothing
-        else Just <| 100 * Time.millisecond
+        else Just { timer = 150 * Time.millisecond, chunkSize = chunkSize }
       , voice = if done then "" else "♫" }
     ! if done
       then [refocusPlate, maybeBabble model]
@@ -112,7 +112,7 @@ chomp model =
 
 petButton : Model -> Html Msg
 petButton model = button
-  [ onClick Pet, disabled <| Maybe.isJust model.eatingTimer ]
+  [ onClick Pet, disabled <| Maybe.isJust model.eating ]
   [ text "Pet!" ]
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -125,15 +125,20 @@ update msg model = case msg of
       then model ! [] -- TODO give some sort of feedback?
       else train
         { model
-          | eatingTimer = Just 0
+          | eating = Just
+            { timer = 0
+            , chunkSize =
+              if Maybe.isJust model.hatched
+                then Basics.max 8 (String.length model.meal // 8)
+                else 1 }
           , babbleTimer = model.babbleTimer - 1 }
   ChompTick diff ->
-    case model.eatingTimer of
+    case model.eating of
       Nothing -> model ! []
-      Just timer ->
+      Just ({timer, chunkSize} as eating) ->
         if timer <= 0
-          then chomp model
-          else { model | eatingTimer = Just (timer - diff) } ! []
+          then chomp chunkSize model
+          else { model | eating = Just { eating | timer = timer - diff } } ! []
   Pet ->
     if Maybe.isJust model.hatched
       then { model | babbleTimer = model.babbleTimer - 1 } ! [speak model]
@@ -155,7 +160,7 @@ subscriptions model =
     when cond sub = if cond then sub else Sub.none
   in Sub.batch
     -- Listen to chomp ticks so long as we're eating words.
-    [ when (Maybe.isJust model.eatingTimer) (AnimationFrame.diffs ChompTick)
+    [ when (Maybe.isJust model.eating) (AnimationFrame.diffs ChompTick)
     -- Always listen to Compromise ports.
     , Compromise.receiveSentences ReceivedSentences
     , Compromise.receiveNormalize ReceivedNormalize ]
