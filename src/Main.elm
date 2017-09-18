@@ -1,11 +1,8 @@
-import Dom
-import Dom.Scroll
 import Html exposing (..)
-import Task
 
 import AnimationFrame
-import Time exposing (Time)
 
+import ChompAnimation
 import Speech
 
 import Compromise
@@ -27,24 +24,6 @@ main = program
   , update = update
   , subscriptions = subscriptions }
 
--- Take a bite out of the meal, and reset the eatingTimer if we're not done eating.
--- If we are done eating, chirp, refocus the plate, and maybe babble.
-chomp : Int -> Model -> (Model, Cmd Msg)
-chomp chunkSize model =
-  let
-    remaining = String.dropLeft chunkSize model.meal
-    done = String.isEmpty remaining
-  in
-    { model
-      | meal = remaining
-      , eating = if done
-        then Nothing
-        else Just { timer = 150 * Time.millisecond, chunkSize = chunkSize }
-      , voice = if done then "" else "♫" }
-    ! if done
-      then [refocusPlate, Speech.maybeBabble model]
-      else []
-
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
   Idle -> model ! []
@@ -53,22 +32,9 @@ update msg model = case msg of
   Feed ->
     if String.isEmpty model.meal
       then model ! [] -- TODO give some sort of feedback?
-      else Util.addCmd scrollPlate <|
-        Speech.train
-          { model
-            | eating = Just
-              { timer = 0 -- chomp immediately!
-              , chunkSize =
-                if Maybe.isJust model.hatched
-                  then Basics.max 8 (String.length model.meal // 8)
-                  else 1 } }
-  ChompTick diff ->
-    case model.eating of
-      Nothing -> model ! []
-      Just ({timer, chunkSize} as eating) ->
-        if timer <= 0
-          then chomp chunkSize model
-          else { model | eating = Just { eating | timer = timer - diff } } ! []
+      else ChompAnimation.setup model
+        |> Util.cmdThen Speech.train
+  ChompTick diff -> ChompAnimation.tick diff model
   Pet ->
     if Maybe.isJust model.hatched
       then Speech.speak model
@@ -95,17 +61,9 @@ subscriptions model =
     , Compromise.receiveSentences ReceivedSentences
     , Compromise.receiveNormalize ReceivedNormalize ]
 
-
 -- the first time we babble, hatch and set our name to our first word
 maybeHatch : String -> Model -> Model
 maybeHatch bab model =
   case model.hatched of
     Just _ -> model
     Nothing -> { model | hatched = Just bab }
-
-refocusPlate : Cmd Msg
-refocusPlate = Task.attempt (always Idle) <| Dom.focus "plate"
-
-scrollPlate : Cmd Msg
-scrollPlate = Task.attempt (always Idle) <| Dom.Scroll.toTop "plate"
-
