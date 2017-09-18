@@ -8,7 +8,7 @@ import Style exposing (..)
 import Style.Border as Border
 import Style.Color as Color
 import Style.Font as Font
-import String exposing (startsWith)
+import String exposing (contains)
 
 import Random.Pcg as Random exposing (Generator)
 
@@ -67,8 +67,8 @@ critterLayer palette part =
   let
     wiggleAnim = "up4px 0.8s alternate infinite steps(2, end)"
     imageUrl = "url('assets/critter/" ++ palette ++ "/" ++ part ++ ".png')"
-    isShadow = part |> startsWith "shadow"
-    isLegs = part |> startsWith "legs"
+    -- Non-moving parts.
+    isStatic = List.any (\k -> part |> contains k) ["legs", "shadow", "egg", "crack"]
   in el CritterLayer
     [ width (px 300)
     , height (px 240)
@@ -76,8 +76,8 @@ critterLayer palette part =
       [ ("background-image", imageUrl)
       , ("background-size", "100%")
       , ("image-rendering", "pixelated")
-      , ("animation", if isShadow || isLegs then "none" else wiggleAnim)
-      , ("opacity", if isShadow then "0.75" else "1.0")
+      , ("animation", if isStatic then "none" else wiggleAnim)
+      , ("opacity", if part |> contains "shadow" then "0.75" else "1.0")
       ]
     ]
     empty
@@ -94,9 +94,12 @@ renderCritter : Model -> Element Styles v Msg
 renderCritter model =
   let
     emote =
-      case model.eating of
-        Nothing -> identity
-        Just e -> Critter.eating e.timer
+      case model.hatched of
+        Nothing -> Critter.egg (toFloat (10 - model.babbleTimer) / 10.0)
+        Just _ ->
+          case model.eating of
+            Nothing -> identity
+            Just e -> Critter.eating e.timer
   in
     critterElement (emote model.critter)
 
