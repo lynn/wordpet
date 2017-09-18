@@ -6,13 +6,12 @@ import Task
 import AnimationFrame
 import Time exposing (Time)
 
-import Dict
-import Markov
-import Random.Pcg as Random
+import Speech
 
 import Compromise
 import Debug
 import Maybe.Extra as Maybe
+import Util
 
 import SFX
 
@@ -43,7 +42,7 @@ chomp chunkSize model =
         else Just { timer = 150 * Time.millisecond, chunkSize = chunkSize }
       , voice = if done then "" else "♫" }
     ! if done
-      then [refocusPlate, maybeBabble model]
+      then [refocusPlate, Speech.maybeBabble model]
       else []
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -54,15 +53,15 @@ update msg model = case msg of
   Feed ->
     if String.isEmpty model.meal
       then model ! [] -- TODO give some sort of feedback?
-      else train
-        { model
-          | eating = Just
-            { timer = 0
-            , chunkSize =
-              if Maybe.isJust model.hatched
-                then Basics.max 8 (String.length model.meal // 8)
-                else 1 }
-          , babbleTimer = model.babbleTimer - 1 }
+      else Util.addCmd scrollPlate <|
+        Speech.train
+          { model
+            | eating = Just
+              { timer = 0 -- chomp immediately!
+              , chunkSize =
+                if Maybe.isJust model.hatched
+                  then Basics.max 8 (String.length model.meal // 8)
+                  else 1 } }
   ChompTick diff ->
     case model.eating of
       Nothing -> model ! []
@@ -72,7 +71,7 @@ update msg model = case msg of
           else { model | eating = Just { eating | timer = timer - diff } } ! []
   Pet ->
     if Maybe.isJust model.hatched
-      then { model | babbleTimer = model.babbleTimer - 1 } ! [speak model]
+      then Speech.speak model
       else model ! [SFX.play SFX.Chirp] -- TODO: some sort of better feedback for petting the egg
   Babble bab ->
     maybeHatch bab { model | voice = bab } ! []
@@ -81,7 +80,7 @@ update msg model = case msg of
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
   ReceivedSentences sentences ->
-    trainSpeech sentences model ! []
+    Speech.trainSpeech sentences model ! []
   ReceivedNormalize normalizedText ->
     Debug.log (toString normalizedText) model ! [] -- TODO
 
@@ -96,10 +95,6 @@ subscriptions model =
     , Compromise.receiveSentences ReceivedSentences
     , Compromise.receiveNormalize ReceivedNormalize ]
 
-babble : Model -> Cmd Msg
-babble model = Cmd.batch
-  [ sample 1 (Babble << String.fromList) model.babbles
-  , Random.generate ResetBabbleTimer <| Random.int 10 25 ]
 
 -- the first time we babble, hatch and set our name to our first word
 maybeHatch : String -> Model -> Model
@@ -108,44 +103,9 @@ maybeHatch bab model =
     Just _ -> model
     Nothing -> { model | hatched = Just bab }
 
-sample : Int -> (List comparable -> Msg) -> Markov.Model comparable -> Cmd Msg
-sample n k = Random.generate k << Markov.walk n
-
 refocusPlate : Cmd Msg
 refocusPlate = Task.attempt (always Idle) <| Dom.focus "plate"
 
 scrollPlate : Cmd Msg
 scrollPlate = Task.attempt (always Idle) <| Dom.Scroll.toTop "plate"
 
-maybeBabble : Model -> Cmd Msg
-maybeBabble model = if model.babbleTimer == 0
-  then babble model
-  else Cmd.none
-
-speak : Model -> Cmd Msg
-speak model = if model.babbleTimer == 0 || Dict.isEmpty model.speech
-  then babble model
-  else sample 2 (Speak << String.join " ") model.speech
-
-train : Model -> (Model, Cmd Msg)
-train model = case model.hatched of
-  Nothing ->
-    -- not yet hatched! train the babble model
-    { model
-      | babbles = Markov.addSample 1 (String.toList model.meal) model.babbles }
-    ! []
-  Just _ ->
-    -- hatched! train the speech model.
-    -- first we need to split the meal into sentences.
-    -- also scroll the text entry to the top so the chomps are visible
-    model ! [scrollPlate, Compromise.sentences model.meal]
-
--- train the speech model
--- TODO: need to normalize first
-trainSpeech : List String -> Model -> Model
-trainSpeech sentences model =
-  let
-    addSentence sentence = Markov.addSample 2 (String.split " " sentence)
-  in
-    { model
-      | speech = List.foldl addSentence model.speech sentences }

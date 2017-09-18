@@ -6,9 +6,9 @@ import Time exposing (Time)
 
 type alias Model =
   { babbles : Markov.Model Char
-  , speech : Markov.Model String
-  , hatched : Maybe String -- name when hatched
+  , speech  : Markov.Model String
   , babbleTimer : Int
+  , hatched : Maybe String -- name when hatched
   , meal : String
   , eating : Maybe { timer : Time, chunkSize : Int }
   , voice : String }
@@ -17,8 +17,8 @@ initial : Model
 initial =
   { babbles = Dict.empty
   , speech  = Dict.empty
-  , hatched = Nothing
   , babbleTimer = 10
+  , hatched = Nothing
   , meal = ""
   , eating = Nothing
   , voice = "" }
