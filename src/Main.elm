@@ -1,8 +1,5 @@
 import Dom
 import Dom.Scroll
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Html.Events.Extra exposing (onEnter)
 import Html exposing (..)
 import Task
 
@@ -16,6 +13,8 @@ import Random.Pcg as Random
 import Compromise
 import Debug
 import Maybe.Extra as Maybe
+
+import SFX
 
 import Model exposing (Model)
 import Msg exposing (..)
@@ -74,7 +73,7 @@ update msg model = case msg of
   Pet ->
     if Maybe.isJust model.hatched
       then { model | babbleTimer = model.babbleTimer - 1 } ! [speak model]
-      else model ! [] -- TODO: some sort of feedback for petting the egg
+      else model ! [SFX.play SFX.Chirp] -- TODO: some sort of better feedback for petting the egg
   Babble bab ->
     maybeHatch bab { model | voice = bab } ! []
   Speak speech ->

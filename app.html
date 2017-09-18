@@ -7,13 +7,11 @@
 <script src="main.js"></script>
 <script>
     var app = Elm.Main.fullscreen();
-    console.log(app);
     app.ports.sentences.subscribe(function(text) {
         var output = nlp(text).sentences().list.map(function(x) { return x.out('text').trim(); });
         app.ports.receiveSentences.send(output);
     });
     app.ports.normalize.subscribe(function(text) {
-        console.log(text);
         var output = nlp(text).out('root');
         app.ports.receiveNormalize.send(output);
     });
@@ -27,7 +25,6 @@
     }
 
     app.ports.playOneOf.subscribe(function(paths) {
-        console.log(paths);
         var path = paths[Math.floor(Math.random() * paths.length)];
         if (!audioCache[path]) {
             audioCache[path] = new Audio(path);

@@ -53,6 +53,7 @@ stylesheet =
     , style H1
       [ Font.size 36
       ]
+    , style CritterLayer []
     ]
 
 
