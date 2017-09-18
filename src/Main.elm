@@ -17,45 +17,16 @@ import Compromise
 import Debug
 import Maybe.Extra as Maybe
 
+import Model exposing (Model)
+import Msg exposing (..)
 
-type alias Model =
-  { babbles : Markov.Model Char
-  , speech  : Markov.Model String
-  , hatched : Maybe String -- name when hatched
-  , babbleTimer : Int
-  , meal : String
-  , eating : Maybe { timer : Time, chunkSize : Int }
-  , voice : String }
-
-type Msg
-  = Idle
-  | TrackInput String
-  | Feed
-  | Pet
-  | Babble String
-  | Speak String
-  | ChompTick Time
-  | ResetBabbleTimer Int
-  -- NLP ports
-  | ReceivedSentences (List String)
-  | ReceivedNormalize String
 
 main : Program Never Model Msg
 main = program
-  { init = initialModel ! []
+  { init = Model.initial ! []
   , view = view
   , update = update
   , subscriptions = subscriptions }
-
-initialModel : Model
-initialModel =
-  { babbles = Dict.empty
-  , speech  = Dict.empty
-  , hatched = Nothing
-  , babbleTimer = 10
-  , meal = ""
-  , eating = Nothing
-  , voice = "" }
 
 view : Model -> Html Msg
 view model = div []
