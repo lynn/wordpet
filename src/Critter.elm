@@ -73,4 +73,4 @@ drool = onParts (change "eyes" "drool0" >> add "surprise0")
 eating : Time -> Critter -> Critter
 eating timer =
   let sprite = if timer < ChompAnimation.duration / 2 then "eat0" else "eat1"
-  in onParts (change "eyes" sprite >> add "heart0")
+  in onParts (change "eyes" sprite)

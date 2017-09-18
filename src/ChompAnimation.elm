@@ -11,10 +11,11 @@ import Time exposing (Time)
 import Model exposing (Model)
 import Msg exposing (Msg)
 
+import SFX
 import Speech
 
 duration : Time
-duration = 320 * Time.millisecond
+duration = 280 * Time.millisecond
 
 -- called each frame of animation in the browser; chomp every 150 milliseconds
 tick : Time -> Model -> (Model, Cmd Msg)
@@ -42,7 +43,7 @@ chomp chunkSize model =
       , voice = if done then "" else "♫" }
     ! if done
       then [refocusPlate, Speech.maybeBabble model]
-      else []
+      else [SFX.play SFX.Chomp]
 
 -- set up the chomp animation!
 setup : Model -> (Model, Cmd Msg)
