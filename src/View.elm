@@ -27,14 +27,6 @@ type Styles
   | CritterLayer
 
 
-sansSerif : List Font
-sansSerif =
-  [ Font.font "helvetica"
-  , Font.font "arial"
-  , Font.font "sans-serif"
-  ]
-
-
 {-| First, we create a stylesheet.
 Styles only deal with properties that are not related to layout, position, or size.
 Generally all properties only have one allowed unit, which is usually px.
@@ -45,11 +37,9 @@ stylesheet =
   Style.styleSheet
     [ style None [] -- It's handy to have a blank style
     , style Main
-      [ Border.all 1 -- set all border widths to 1 px.
-      , Color.text Color.white
+      [ Color.text Color.white
       , Color.background (Color.rgb 125 119 168)
-      , Color.border Color.lightGrey
-      , Font.typeface sansSerif
+      , Font.typeface [ Font.font "Lato", Font.font "sans-serif" ]
       , Font.size 16
       , Font.lineHeight 1.3 -- line height, given as a ratio of current font size.
       ]
