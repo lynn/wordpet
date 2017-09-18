@@ -1,4 +1,4 @@
-module ChompAnimation exposing (tick, setup)
+module ChompAnimation exposing (duration, tick, setup)
 
 import Dom
 import Dom.Scroll
@@ -12,6 +12,9 @@ import Model exposing (Model)
 import Msg exposing (Msg)
 
 import Speech
+
+duration : Time
+duration = 320 * Time.millisecond
 
 -- called each frame of animation in the browser; chomp every 150 milliseconds
 tick : Time -> Model -> (Model, Cmd Msg)
@@ -35,7 +38,7 @@ chomp chunkSize model =
       | meal = remaining
       , eating = if done
         then Nothing
-        else Just { timer = 150 * Time.millisecond, chunkSize = chunkSize }
+        else Just { timer = duration, chunkSize = chunkSize }
       , voice = if done then "" else "♫" }
     ! if done
       then [refocusPlate, Speech.maybeBabble model]

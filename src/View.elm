@@ -90,12 +90,17 @@ critter c =
     |> within (List.map (critterLayer c.palette) c.parts)
 
 
-exampleBabys : Element Styles v Msg
-exampleBabys =
-  let parts = ["shadow0", "tail0", "tailtip0", "legs0", "wings0", "body0", "eyes0"] in
-  [0, 1, 2, 3, 4, 5, 6, 7]
-    |> List.map (\i -> Random.step Critter.random (Random.initialSeed (i + 345783)) |> Tuple.first |> Critter.drool |> critter)
-    |> wrappedRow None [center, paddingTop 20]
+exampleBabys : Model -> Element Styles v Msg
+exampleBabys model =
+  let
+    parts = ["shadow0", "tail0", "tailtip0", "legs0", "wings0", "body0", "eyes0"]
+    blah = case model.eating of
+          Nothing -> identity
+          Just e -> Critter.eating e.timer
+  in
+    [0, 1, 2, 3, 4, 5, 6, 7]
+      |> List.map (\i -> Random.step Critter.random (Random.initialSeed (i + 345783)) |> Tuple.first |> blah |> critter)
+      |> wrappedRow None [center, paddingTop 20]
 
 
 -- TODO: this should actually take the model and use it.
@@ -107,5 +112,5 @@ view model =
       , html (OldView.inputArea model)
       , html (OldView.speechBox model)
       , html (OldView.petButton model)
-      , exampleBabys
+      , exampleBabys model
       ]

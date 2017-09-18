@@ -1,6 +1,8 @@
 module Critter exposing (..)
+import ChompAnimation
 import Random.Pcg as Random exposing (Generator)
 import Maybe.Extra as Maybe
+import Time exposing (Time)
 
 -- e.g. { palette = "palette5", parts = ["wings2", "body0", "eyes1"], dizzy = "dizzy0" }
 -- (parts sorted from back to front)
@@ -67,3 +69,8 @@ dizzy c = onParts (change "eyes" c.dizzy >> add "heart0") c
 
 drool : Critter -> Critter
 drool = onParts (change "eyes" "drool0" >> add "surprise0")
+
+eating : Time -> Critter -> Critter
+eating timer =
+  let sprite = if timer < ChompAnimation.duration / 2 then "eat0" else "eat1"
+  in onParts (change "eyes" sprite >> add "heart0")
