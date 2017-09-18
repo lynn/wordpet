@@ -10,6 +10,9 @@ import Style.Color as Color
 import Style.Font as Font
 import String exposing (startsWith)
 
+import Random.Pcg as Random exposing (Generator)
+
+import Critter exposing (Critter)
 import OldView
 import Model exposing (..)
 import Msg exposing (..)
@@ -81,18 +84,17 @@ critterLayer palette part =
 
 
 -- A 300x240 element containing critterLayers stacked on top of each other.
--- Usage:  critter "palette0" ["tail0", "tailtip0", "body0", "eyes0"]
-critter : String -> List String -> Element Styles v Msg
-critter palette parts =
+critter : Critter -> Element Styles v Msg
+critter c =
   el None [ width (px 300), height (px 240) ] empty
-    |> within (List.map (critterLayer palette) parts)
+    |> within (List.map (critterLayer c.palette) c.parts)
 
 
 exampleBabys : Element Styles v Msg
 exampleBabys =
+  let parts = ["shadow0", "tail0", "tailtip0", "legs0", "wings0", "body0", "eyes0"] in
   [0, 1, 2, 3, 4, 5, 6, 7]
-    |> List.map (\i -> "palette" ++ toString i)
-    |> List.map (\palette -> critter palette ["shadow0", "tail0", "tailtip0", "legs0", "wings0", "body0", "eyes0"])
+    |> List.map (\i -> Random.step Critter.random (Random.initialSeed (i + 345783)) |> Tuple.first |> Critter.drool |> critter)
     |> wrappedRow None [center, paddingTop 20]
 
 
