@@ -13,7 +13,7 @@ chirps =
 
 chomps : List String
 chomps =
-  List.range 0 119
+  List.range 1 119
   |> List.map (\i -> "assets/sfx/chomp" ++ toString i ++ ".mp3")
 
 play : SFX -> Cmd msg

@@ -14,9 +14,21 @@
         var output = nlp(text).out('root');
         app.ports.receiveNormalize.send(output);
     });
+
+    // Not sure if this helps at all?
+    var audioCache = {};
+    for (var i = 0; i < 120; i++) {
+        var path = "assets/sfx/chomp" + i + ".mp3"
+        audioCache[path] = new Audio(path);
+        audioCache[path].load();
+    }
+
     app.ports.playOneOf.subscribe(function(paths) {
-        console.log(path);
+        console.log(paths);
         var path = paths[Math.floor(Math.random() * paths.length)];
-        new Audio(path).play();
+        if (!audioCache[path]) {
+            audioCache[path] = new Audio(path);
+        }
+        audioCache[path].play();
     });
 </script>
