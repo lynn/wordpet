@@ -3,13 +3,17 @@ module View exposing (..)
 import Color
 import Element exposing (..)
 import Element.Attributes exposing (..)
+import Element.Events exposing (..)
+import Element.Input as Input
 import Html exposing (Html)
+import Html.Attributes
 import Style exposing (..)
 import Style.Border as Border
 import Style.Color as Color
 import Style.Font as Font
 import String exposing (contains)
 
+import Json.Decode as Json
 import Random.Pcg as Random exposing (Generator)
 
 import Critter exposing (Critter)
@@ -93,15 +97,72 @@ renderCritter model =
   in
     critterElement (emote model.critter)
 
+onEnter : Msg -> Attribute v Msg
+onEnter msg =
+    let
+        isEnter code =
+            if code == 13 then
+                Json.succeed msg
+            else
+                Json.fail "not ENTER"
+    in
+        on "keydown" (Json.andThen isEnter keyCode)
+
+
+inputArea : Model -> Element Styles v Msg
+inputArea model = column None [] <|
+  let (eating, options) =
+    case model.eating of
+      Just _ -> (True, [Input.disabled])
+      Nothing -> (False, [Input.focusOnLoad])
+
+  in case model.hatched of
+    Nothing ->
+      [ Input.text None
+        [ id "plate"
+        , onEnter Feed ]
+        { onChange = TrackInput
+        , value = model.meal
+        , label = Input.placeholder { text = "feed words", label = Input.hiddenLabel "plate" }
+        , options = options }
+        -- , placeholder "feed words"
+        -- , value model.meal
+        -- , disabled whenEating
+        -- , autofocus True ]
+      ]
+    Just name ->
+      [ text name
+      , Input.multiline None
+        [ id "plate" ]
+        { onChange = TrackInput
+        , value = model.meal
+        , label = Input.placeholder { text = "feed paragraphs", label = Input.hiddenLabel "plate" }
+        , options = options }
+      , button None
+        (if eating || String.isEmpty model.meal then [] else [onClick Feed])
+        (text "Feed!") ]
+
+
+speechBox : Model -> Element Styles v Msg
+speechBox model = text model.voice
+
+
+-- TODO: the critter itself should just be clickable, probably?
+petButton : Model -> Element Styles v Msg
+petButton model = button None [ onClick Pet ] (text "Pet!")
+
 
 -- TODO: this should actually take the model and use it.
 view : Model -> Html Msg
 view model =
   Element.layout stylesheet <|
     full Main [center] <| column None [center] <|
-      [ h1 H1 [paddingTop 20] (text "here are some babys to pet")
-      , html (OldView.inputArea model)
-      , html (OldView.speechBox model)
-      , html (OldView.petButton model)
+      [ h1 H1 [paddingTop 20] (text "wordpet")
+      -- , html (OldView.inputArea model)
+      , inputArea model
+      -- , html (OldView.speechBox model)
+      , speechBox model
+      -- , html (OldView.petButton model)
+      , petButton model
       , renderCritter model
       ]
