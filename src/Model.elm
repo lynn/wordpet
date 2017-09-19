@@ -1,9 +1,10 @@
-module Model exposing (Model, initial)
+module Model exposing (Model, busy, initial)
 
 import Critter exposing (Critter)
 import Dict
 import Markov
 import Time exposing (Time)
+import Maybe.Extra exposing (isJust)
 
 type alias Model =
   { critter : Critter
@@ -25,3 +26,8 @@ initial =
   , meal = ""
   , eating = Nothing
   , voice = "" }
+
+busy : Model -> Bool
+busy model =
+    isJust model.eating
+
