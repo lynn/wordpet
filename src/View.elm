@@ -30,6 +30,8 @@ type Styles
   | H1
   | CritterStyle
   | SpeechBubble
+  | SpeechBubbleHolder
+  | SpeechBubbleTail
 
 
 {-| First, we create a stylesheet.
@@ -55,16 +57,22 @@ stylesheet =
       [ cursor "pointer"
       ]
     , style SpeechBubble
-      [ Border.rounded 10.0
-      , Color.background (Color.rgba 0 0 0 0.2)
-      , pseudo "after"
+      [ Font.size 18
+      , Border.rounded 10.0
+      , Color.background (Color.rgba 255 255 255 0.7)
+      , Color.text Color.darkCharcoal
+      , Font.center
+      ]
+    , style SpeechBubbleHolder []
+    , style SpeechBubbleTail
+      [ pseudo "after"
         [ prop "content" "\"\""
         , prop "position" "absolute"
-        , prop "bottom" "-20px"
-        , prop "left" "30px"
-        , prop "border-width" "20px 20px 0 0"
+        , prop "bottom" "-12px"
+        , prop "left" "-12px"
+        , prop "border-width" "12px 12px 12px 0"
         , prop "border-style" "solid"
-        , prop "border-color" "rgba(0,0,0,0.2) transparent"
+        , prop "border-color" "transparent rgba(255,255,255,0.7)"
         ]
       ]
     ]
@@ -100,8 +108,26 @@ critterElement c =
     |> within (List.map (critterLayer c.palette) c.parts)
 
 
+speechBubbleHolder : Element Styles v Msg
+speechBubbleHolder =
+  el SpeechBubbleHolder [ height (px 240), width (px 330) ] empty
+
+
+speechBubbleTail : Element Styles v Msg
+speechBubbleTail =
+  el SpeechBubbleTail [ verticalCenter ] empty
+
+
 speechBubble : Model -> Element Styles v Msg
-speechBubble model = paragraph SpeechBubble [width (px 200), moveUp 48, moveRight 310, padding 10] [text model.voice]
+speechBubble model =
+  el SpeechBubble
+    [ minWidth (px 80)
+    , maxWidth (px 330)
+    , minHeight (px 40)
+    , padding 10
+    , verticalCenter
+    ]
+    (paragraph None [] [text model.voice])
 
 
 renderCritter : Model -> Element Styles v Msg
@@ -120,7 +146,7 @@ renderCritter model =
                 _ -> Critter.drool
   in
     critterElement (emote model.critter)
-    |> within [speechBubble model]
+    |> onRight [ speechBubbleHolder |> within [ speechBubbleTail, speechBubble model ] ]
 
 
 onEnter : Msg -> Attribute v Msg

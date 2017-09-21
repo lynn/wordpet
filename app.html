@@ -4,6 +4,15 @@
 <style>
 @keyframes up4px { to { transform: translatey(-4px);} }
 body { background-color: rgb(125, 119, 168); }
+
+/* This selects the *parent* of the speech bubble div (which is a "helper"
+   div that style-elments injects, hence this rule's presence in HTML-land).
+   It sets that elements' margin rules so that the speech bubble overflows
+   *downward* instead of both up and down. */
+div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
+    margin-top: auto; margin-bottom: auto;
+}
+
 </style>
 <script src="https://unpkg.com/compromise/builds/compromise.min.js"></script>
 <script src="main.js"></script>
