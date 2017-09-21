@@ -41,10 +41,8 @@ update msg model = case msg of
     if Maybe.isJust model.hatched
       then Speech.speak model
       else model ! [SFX.play SFX.Chirp] -- TODO: some sort of better feedback for petting the egg
-  Babble bab ->
-    maybeHatch bab { model | voice = bab } ! []
-  Speak speech ->
-    { model | voice = speech } ! []
+  Vocalize voicetype voice ->
+    maybeHatch { model | voice = voice } ! [Speech.handleSpeech voicetype]
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
   SetCritter c ->
@@ -66,8 +64,8 @@ subscriptions model =
     , Compromise.receiveNormalize ReceivedNormalize ]
 
 -- the first time we babble, hatch and set our name to our first word
-maybeHatch : String -> Model -> Model
-maybeHatch bab model =
+maybeHatch : Model -> Model
+maybeHatch model =
   case model.hatched of
     Just _ -> model
-    Nothing -> { model | hatched = Just bab }
+    Nothing -> { model | hatched = Just model.voice }

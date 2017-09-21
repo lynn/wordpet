@@ -5,7 +5,6 @@ import GenericDict as GDict exposing (GenericDict)
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Random.Pcg as Random exposing (Generator)
-import Debug
 
 
 type alias Ngram a = List a
@@ -74,17 +73,19 @@ addSample n normalize words model =
 
 
 -- random word generator using the distribution given by a Tally
-pickWord : Tally word -> Generator word
+pickWord : Tally word -> Generator (Maybe word)
 pickWord tally =
   let
+    frequencies : List (word, Int)
     frequencies = GDict.toList tally.wordTally
 
+    pickWith : List (word, Int) -> Int -> Maybe word
     pickWith wordcounts index = case wordcounts of
       ((word, count) :: tail) ->
         if index < count
-          then word
+          then Just word
           else pickWith tail (index - count)
-      [] -> Debug.crash "oh no. this shouldn't happen"
+      [] -> Nothing
   in
     Random.int 0 (tally.total - 1) |> Random.map (pickWith frequencies)
 
@@ -93,13 +94,12 @@ step : Int -> (comparable -> comparable) -> Model comparable -> Ngram comparable
   -> Generator (Maybe (comparable, Ngram comparable))
 step n normalize model ngram =
   let
-    tally = case Dict.get ngram model of
-      Just t -> t
-      Nothing -> Debug.crash "also shouldn't happen!"
     slideAmount = max 0 (List.length ngram - n + 1)
     slide next = (next, List.drop slideAmount ngram ++ [normalize next])
-  in
-    Random.map (Maybe.map slide) <| pickWord tally
+  in case Dict.get ngram model of
+    Nothing -> Random.constant Nothing
+    Just tally -> pickWord tally
+      |> Random.map (Maybe.join >> Maybe.map slide)
 
 -- generate a whole sentence!! wow!!
 walk : Int -> (comparable -> comparable) -> Model comparable

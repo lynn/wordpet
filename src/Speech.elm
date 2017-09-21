@@ -1,4 +1,4 @@
-module Speech exposing (train, trainSpeech, speak, maybeBabble)
+module Speech exposing (train, trainSpeech, speak, maybeBabble, handleSpeech)
 
 import Dict
 import Markov
@@ -10,10 +10,6 @@ import Regex exposing (Regex, regex)
 import Model exposing (Model)
 import Msg exposing (Msg)
 
-
-sample : (List comparable -> msg) -> Int -> (comparable -> comparable)
-  -> Markov.Model comparable -> Cmd msg
-sample k n normalize = Random.generate k << Markov.walk n normalize
 
 -- train the babble model
 trainBabbles : Model -> Model
@@ -48,9 +44,17 @@ train = babbleTick >> \ model ->
 speak : Model -> (Model, Cmd Msg)
 speak = babbleTick >> \ model ->
   ( model
-  , if model.babbleTimer == 0 || Dict.isEmpty model.speech
+  , if model.babbleTimer == 0
     then babble model
-    else sample (Msg.Speak << String.join " ") 2 normalizeWord model.speech )
+    else Random.generate identity
+      (Markov.walk 2 normalizeWord model.speech |>
+        Random.andThen (\ voice ->
+          -- if the speech model is empty, babble instead
+          if List.isEmpty voice
+            then Random.map (Msg.Vocalize Msg.Babble) <|
+              babbleWalk model
+            else Random.constant <|
+              Msg.Vocalize Msg.Speech (String.join " " voice))) )
 
 -- for actions that can babble! decrease the babble timer
 babbleTick : Model -> Model
@@ -62,12 +66,20 @@ maybeBabble model = if model.babbleTimer == 0
   then babble model
   else Cmd.none
 
--- sample the babble model and reset the babble timer,
--- so we don't babble too often
+babbleWalk : Model -> Random.Generator String
+babbleWalk = Random.map String.fromList << Markov.walk 1 identity << .babbles
+
+-- sample the babble model
 babble : Model -> Cmd Msg
-babble model = Cmd.batch
-  [ sample (Msg.Babble << String.fromList) 1 identity model.babbles
-  , Random.generate Msg.ResetBabbleTimer <| Random.int 10 25 ]
+babble = Random.generate (Msg.Vocalize Msg.Babble) << babbleWalk
+
+-- handle any additional work after speaking:
+-- when we babble, reset the babble timer, so we don't babble too often
+handleSpeech : Msg.VoiceType -> Cmd Msg
+handleSpeech voiceType =
+  case voiceType of
+    Msg.Speech -> Cmd.none
+    Msg.Babble -> Random.generate Msg.ResetBabbleTimer <| Random.int 10 25
 
 -- normalize words for speech training and sampling
 normalizeWord : String -> String

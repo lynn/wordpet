@@ -7,11 +7,14 @@ type Msg
   | TrackInput String
   | Feed
   | Pet
-  | Babble String
-  | Speak String
+  | Vocalize VoiceType String
   | ChompTick Time
   | ResetBabbleTimer Int
   | SetCritter Critter
   -- NLP ports
   | ReceivedSentences (List String)
   | ReceivedNormalize String
+
+type VoiceType
+  = Babble
+  | Speech
