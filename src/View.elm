@@ -70,9 +70,9 @@ stylesheet =
       [ pseudo "after"
         [ prop "content" "\"\""
         , prop "position" "absolute"
-        , prop "bottom" "-12px"
+        , prop "bottom" "-6px"
         , prop "left" "-12px"
-        , prop "border-width" "12px 12px 12px 0"
+        , prop "border-width" "6px 12px 6px 0"
         , prop "border-style" "solid"
         , prop "border-color" "transparent rgba(255,255,255,0.7)"
         ]
@@ -116,6 +116,7 @@ speechBubbleHolder model =
     [ height (px 240)
     , width (px 330)
     , vary Invisible (model.voice == "")
+    , moveRight 10
     ]
     empty
 
