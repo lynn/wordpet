@@ -226,7 +226,7 @@ statBox model =
         Nothing -> ("???", [paragraph None [] [text "An egg containing an unknown critter. Teach it some words to make it hatch!"]])
     title = (el H2 [paddingBottom 20] (text name))
   in el StatBox
-    [ width (px 250)
+    [ width (px 280)
     , height (px 200)
     , padding 20
     , moveLeft 10
