@@ -34,8 +34,8 @@ update msg model = case msg of
   Feed ->
     if String.isEmpty model.meal
       then model ! [] -- TODO give some sort of feedback?
-      else ChompAnimation.setup model
-        |> Util.cmdThen Speech.train
+      else Speech.train model
+        |> Util.cmdThen ChompAnimation.setup
   ChompTick diff -> ChompAnimation.tick diff model
   Pet ->
     if Maybe.isJust model.hatched

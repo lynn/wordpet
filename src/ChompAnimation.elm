@@ -52,24 +52,37 @@ chomp oldState model =
       , voice = if Maybe.isJust newState then "♫" else "" }
     ! case newState of
         Just _ -> -- still eating...
-          [SFX.play (if Maybe.isJust model.hatched then SFX.Chomp else SFX.None)]
+          [SFX.play SFX.Chomp]
         Nothing -> -- done!
           [SFX.play (if Maybe.isJust model.hatched then SFX.Gulp else if model.babbleTimer == 0 then SFX.Hatch else SFX.Rattle)
           , refocusPlate
           , Speech.maybeBabble model]
 
+-- commands to run when we finish up eating
+finishEating : Model -> Cmd Msg
+finishEating model = Cmd.batch
+  [ refocusPlate
+  , Speech.maybeBabble model
+  , SFX.play <|
+    if Maybe.isJust model.hatched then
+      SFX.Gulp
+    else if model.babbleTimer == 0 then
+      SFX.Hatch
+    else
+      SFX.Rattle ]
+
 -- set up the chomp animation!
 setup : Model -> (Model, Cmd Msg)
 setup model =
-  { model
-    | eating = Just
-      { timer = 0 -- chomp immediately!
-      , state = Model.Chomping
-        { chunkSize =
-          if Maybe.isJust model.hatched
-            then Basics.max 8 (String.length model.meal // 8)
-            else 1 } } }
-  ! [scrollPlate]
+  if model.hatched == Nothing then
+    { model | meal = "" } ! [finishEating model]
+  else
+    { model
+      | eating = Just
+        { timer = 0 -- chomp immediately!
+        , state = Model.Chomping
+          { chunkSize = Basics.max 8 (String.length model.meal // 8) } } }
+    ! [scrollPlate]
 
 refocusPlate : Cmd Msg
 refocusPlate = Task.attempt (always Msg.Idle) <| Dom.focus "plate"
