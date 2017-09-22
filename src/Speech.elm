@@ -67,9 +67,8 @@ maybeBabble model = if model.babbleTimer == 0
   else Cmd.none
 
 babbleText : Model -> Random.Generator String
-babbleText model = Random.map2 (++)
-  (Random.map String.fromList << Markov.walk 1 identity <| model.babbles)
-  (Random.map (Maybe.withDefault "☺") <| Random.sample ["!", "?", "~", "…"])
+babbleText model = Markov.walk 1 identity model.babbles
+  |> Random.map (\ bab -> String.fromList bab ++ model.critter.punctuation)
 
 -- sample the babble model
 babble : Model -> Cmd Msg

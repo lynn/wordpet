@@ -14,6 +14,7 @@ type alias Critter =
   , dizzy : String
   , chompDuration : Time
   , stats : List (String, Int)  -- scores from 1 to 5
+  , punctuation : String -- punctuation when babbling
   }
 
 chompDuration : Time
@@ -22,7 +23,7 @@ chompDuration = 280 * Time.millisecond
 -- This dummy critter is used in the initial model. When the program starts,
 -- a command is immediately issued to generate a better one randomly.
 dummy : Critter
-dummy = { palette = "", parts = [], dizzy = "", chompDuration = chompDuration, stats = [] }
+dummy = { palette = "", parts = [], dizzy = "", chompDuration = chompDuration, stats = [], punctuation = "☺" }
 
 -- Generate `Just` a random item from the list with probability p,
 -- or `Nothing` with probability (1 − p).
@@ -79,17 +80,19 @@ statsGenerator count =
 -- A generator for random critters!
 generator : Generator Critter
 generator =
-  Random.map4
-    (\i j p s ->
+  Random.map5
+    (\i j p s b ->
       { palette = "palette" ++ toString i
       , parts = p
       , dizzy = "dizzy" ++ toString j
       , chompDuration = chompDuration
-      , stats = s })
+      , stats = s
+      , punctuation = b})
     (Random.int 0 7)
     (Random.int 0 1)
     partsGenerator
     (statsGenerator 4)
+    (Random.map (Maybe.withDefault "☺") <| Random.sample ["!", "?", "~", "…"])
 
 -- Replace the first part in the list of parts that contains `old` by `new`.
 -- For example, to make a critter eat, try `change "eyes" "eat0" critter.parts`.
