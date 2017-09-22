@@ -50,7 +50,35 @@ partsGenerator =
     |> Random.map Maybe.values
 
 statNames : List String
-statNames = ["Moé", "Fashion", "Gravy", "Curiosity", "Buoyancy"]
+statNames =
+  [ "Adventure"
+  , "Aerodynamics"
+  , "Affection"
+  , "Buoyancy"
+  , "Caprice"
+  , "Clumsiness"
+  , "Curiosity"
+  , "Fashion"
+  , "Friendship"
+  , "Gravy"
+  , "Guts"
+  , "Honesty"
+  , "Humor"
+  , "Jitteriness"
+  , "Moé"
+  , "Patience"
+  , "Pep"
+  , "Persistence"
+  , "Rhyme"
+  , "Shyness"
+  , "Sleepiness"
+  , "Speed"
+  , "Spunk"
+  , "Squish"
+  , "Strength"
+  , "Stress"
+  , "Tenderness"
+  , "Whimsy" ]
 
 -- Pick out a random element x from a list, generating (Just x, all elements but x).
 -- If the list is empty, (Nothing, []) is generated.
