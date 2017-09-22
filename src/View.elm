@@ -64,7 +64,8 @@ stylesheet =
       , Font.center
       ]
     , style CritterStyle
-      [ cursor "pointer"
+      [ cursor "grab"
+      , cursor "-webkit-grab"
       ]
     , style SpeechBubble
       [ Border.rounded 10.0
