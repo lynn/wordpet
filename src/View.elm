@@ -164,7 +164,7 @@ renderCritter model =
     emote : Critter -> Critter
     emote =
       case model.hatched of
-        Nothing -> Critter.egg (toFloat (10 - model.babbleTimer) / 10.0)
+        Nothing -> Critter.egg (toFloat (6 - model.babbleTimer) / 6.0)
         Just _ ->
           case model.eating of
             Just e -> Critter.eating e.timer
