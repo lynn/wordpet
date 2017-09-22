@@ -84,7 +84,7 @@ setup model =
       | eating = Just
         { timer = 0 -- chomp immediately!
         , state = Model.Chomping
-          { chunkSize = Basics.max 8 (String.length model.meal // 8) } } }
+          { chunkSize = Basics.max 8 (String.length model.meal // 8 + 1) } } }
     ! [scrollPlate]
 
 refocusPlate : Cmd Msg
