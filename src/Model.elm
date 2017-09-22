@@ -14,7 +14,8 @@ type alias Model =
   , hatched : Maybe String -- name when hatched
   , meal : String
   , eating : Maybe { timer : Time, state : MealState }
-  , voice : String }
+  , voice : String
+  }
 
 type MealState
   = Chomping { chunkSize : Int }

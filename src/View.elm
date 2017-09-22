@@ -57,9 +57,11 @@ stylesheet =
       ]
     , style H1
       [ Font.size 36
+      , Font.center
       ]
     , style H2
       [ Font.size 30
+      , Font.center
       ]
     , style CritterStyle
       [ cursor "pointer"
@@ -91,6 +93,7 @@ stylesheet =
       , Color.background (Color.rgba 255 255 255 0.7)
       , Color.text Color.darkCharcoal
       , Font.size 18
+      , prop "transition" "height 0.2s ease"
       ]
     , style StatName []
     , style StatValue []
@@ -206,8 +209,8 @@ inputArea model = column None [] <|
         (if canFeed then [onClick Feed] else [])
         (text "Feed!") ]
 
-stat : String -> Int -> MyElement
-stat name value =
+statRow : (String, Int) -> MyElement
+statRow (name, value) =
   let stars n = String.repeat n "★" ++ String.repeat (5 - n) "☆"
   in el None [height (px 25)] empty
     |> within
@@ -216,19 +219,25 @@ stat name value =
 
 statBox : Model -> MyElement
 statBox model =
-  el StatBox
+  let
+    (name, statRows) =
+      case model.hatched of
+        Just name -> (name, List.map statRow model.critter.stats)
+        Nothing -> ("???", [paragraph None [] [text "An egg containing an unknown critter. Teach it some words to make it hatch!"]])
+    title = (el H2 [paddingBottom 20] (text name))
+  in el StatBox
     [ width (px 250)
-    , minHeight (px 44)
+    , height (px 200)
     , padding 20
+    , moveLeft 10
     ]
-    (column None [] [ stat "Charm" 4, stat "Squeamishness" 2, stat "Gravy" 5 ])
+    (column None [] (title :: statRows))
 
 view : Model -> Html Msg
 view model =
   Element.layout stylesheet <|
     full Main [center] <| column None [center, spacing 20] <|
       [ h1 H1 [paddingTop 20] (text "wordpet")
-      , h2 H2 [] (text <| String.toLower <| Maybe.withDefault "???" model.hatched)
       , renderCritter model
         |> onLeft [ statBox model ]
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]

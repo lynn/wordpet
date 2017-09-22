@@ -1,5 +1,6 @@
 module Critter exposing (..)
 import Random.Pcg as Random exposing (Generator)
+import List.Extra as List
 import Maybe.Extra as Maybe
 import Time exposing (Time)
 
@@ -10,7 +11,9 @@ type alias Critter =
   { palette : String
   , parts : List String  -- (sorted from back to front)
   , dizzy : String
-  , chompDuration : Time }
+  , chompDuration : Time
+  , stats : List (String, Int)  -- scores from 1 to 5
+  }
 
 chompDuration : Time
 chompDuration = 280 * Time.millisecond
@@ -18,7 +21,7 @@ chompDuration = 280 * Time.millisecond
 -- This dummy critter is used in the initial model. When the program starts,
 -- a command is immediately issued to generate a better one randomly.
 dummy : Critter
-dummy = { palette = "", parts = [], dizzy = "", chompDuration = chompDuration }
+dummy = { palette = "", parts = [], dizzy = "", chompDuration = chompDuration, stats = [] }
 
 -- Generate `Just` a random item from the list with probability p,
 -- or `Nothing` with probability (1 − p).
@@ -46,18 +49,49 @@ partsGenerator =
     |> sequence
     |> Random.map Maybe.values
 
+statNames : List String
+statNames = ["Moé", "Fashion", "Gravy", "Curiosity", "Buoyancy"]
+
+-- Pick out a random element x from a list, generating (Just x, all elements but x).
+-- If the list is empty, (Nothing, []) is generated.
+pickOut : List a -> Generator (Maybe a, List a)
+pickOut xs =
+  Random.int 0 (List.length xs - 1)
+  |> Random.map (\i ->
+    (List.getAt i xs, List.take i xs ++ List.drop (i+1) xs))
+
+-- Shuffle a list.
+shuffle : List a -> Generator (List a)
+shuffle xs =
+  pickOut xs
+  |> Random.andThen (\t ->
+    case t of
+      (Just x, rest) -> Random.map ((::) x) (shuffle rest)
+      _ -> Random.constant [])
+
+-- Generate `count` random stats.
+statsGenerator : Int -> Generator (List (String, Int))
+statsGenerator count =
+  shuffle statNames
+  |> Random.andThen (\names ->
+    Random.list count (Random.int 2 5)
+    |> Random.map (\scores ->
+      List.map2 (,) names scores))
+
 -- A generator for random critters!
 generator : Generator Critter
 generator =
-  Random.map3
-    (\i j p ->
+  Random.map4
+    (\i j p s ->
       { palette = "palette" ++ toString i
       , parts = p
       , dizzy = "dizzy" ++ toString j
-      , chompDuration = chompDuration })
+      , chompDuration = chompDuration
+      , stats = s })
     (Random.int 0 7)
     (Random.int 0 1)
     partsGenerator
+    (statsGenerator 4)
 
 -- Replace the first part in the list of parts that contains `old` by `new`.
 -- For example, to make a critter eat, try `change "eyes" "eat0" critter.parts`.
