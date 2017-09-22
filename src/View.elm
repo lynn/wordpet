@@ -105,18 +105,17 @@ stylesheet =
 critterLayer : String -> String -> MyElement
 critterLayer palette part =
   let
-    wiggleAnim = "up4px 0.8s alternate infinite steps(2, end)"
     imageUrl = "url('assets/critter/" ++ palette ++ "/" ++ part ++ ".png')"
     -- Non-moving parts.
     isStatic = List.any (\k -> part |> contains k) ["legs", "shadow", "egg", "crack", "surprise", "heart"]
   in el None
     [ width (px 300)
     , height (px 240)
+    , class <| if isStatic then "static" else "wiggly"
     , inlineStyle
       [ ("background-image", imageUrl)
       , ("background-size", "100%")
       , ("image-rendering", "pixelated")
-      , ("animation", if isStatic then "none" else wiggleAnim)
       , ("opacity", if part |> contains "shadow" then "0.75" else "1.0")
       ]
     ]

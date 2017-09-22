@@ -2,9 +2,11 @@ module Petting exposing (dizzyTick, pet)
 
 import Time exposing (Time)
 
+import Animation
+import SFX
+
 import Model exposing (Model, DizzyState(..))
 import Msg exposing (..)
-import SFX
 
 
 -- cutoff for when we become dizzy
@@ -37,7 +39,8 @@ decayTick diff decay = decay / 2^(diff / Time.second)
 
 -- pet pet pet
 pet : Model -> (Model, Cmd Msg)
-pet = stimulate >> \ model -> model ! [chirp model]
+pet = stimulate >> \ model -> model
+  ! [chirp model, Animation.trigger "pet"]
 
 -- increase dizziness when poked
 stimulate : Model -> Model

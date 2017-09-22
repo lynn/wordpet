@@ -18,6 +18,13 @@ body { background-color: rgb(125, 119, 168); }
   to { filter: brightness(100%); }
 }
 
+.pet .wiggly { animation: pet 0.1s ease-out both; }
+@keyframes pet {
+  from { transform: translatey(4px); }
+  to { transform: none; }
+}
+
+.wiggly { animation: up4px 0.8s alternate infinite steps(2, end); }
 @keyframes up4px { to { transform: translatey(-4px);} }
 
 /* This selects the *parent* of the speech bubble div (which is a "helper"
