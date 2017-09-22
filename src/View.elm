@@ -17,6 +17,7 @@ import Json.Decode as Json
 import Critter exposing (Critter)
 import Model exposing (Model)
 import Msg exposing (..)
+import Petting
 
 
 {-| The type we use for identifiers for our styles.
@@ -124,10 +125,20 @@ critterLayer palette part =
 
 
 -- A 300x240 element containing critterLayers stacked on top of each other.
-critterElement : Critter -> MyElement
-critterElement c =
-  el CritterStyle [ id "critter", width (px 300), height (px 240), onClick Pet ] empty
-    |> within (List.map (critterLayer c.palette) c.parts)
+critterElement : Model -> MyElement
+critterElement model =
+  let
+    critter = model.critter
+    dizziness =
+      if Petting.isOverwhelmed model
+        then [class "dizzy"]
+        else []
+  in
+    el
+      CritterStyle
+      ([ id "critter", width (px 300), height (px 240), onClick Pet ] ++ dizziness)
+      empty
+    |> within (List.map (critterLayer critter.palette) critter.parts)
 
 
 speechBubbleHolder : Model -> MyElement
@@ -176,7 +187,7 @@ renderCritter model =
                     "" -> identity
                     _ -> Critter.drool
   in
-    critterElement (emote model.critter)
+    critterElement { model | critter = emote model.critter }
 
 
 onEnter : msg -> Attribute v msg

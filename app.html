@@ -24,6 +24,12 @@ body { background-color: rgb(125, 119, 168); }
   to { transform: none; }
 }
 
+.dizzy .wiggly { animation: dizzy 0.05s alternate infinite ease-in-out both; }
+@keyframes dizzy {
+  from { transform: translatex(-2px); }
+  to { transform: translatex(2px); }
+}
+
 .wiggly { animation: up4px 0.8s alternate infinite steps(2, end); }
 @keyframes up4px { to { transform: translatey(-4px);} }
 
