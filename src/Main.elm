@@ -4,6 +4,7 @@ import Html exposing (..)
 import AnimationFrame
 
 import ChompAnimation
+import FoodProcessor
 import Speech
 
 import Compromise
@@ -30,7 +31,7 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
   Idle -> model ! []
   TrackInput text ->
-    { model | meal = text } ! []
+    FoodProcessor.process { model | meal = text } ! []
   Feed ->
     if String.isEmpty model.meal
       then model ! [] -- TODO give some sort of feedback?
