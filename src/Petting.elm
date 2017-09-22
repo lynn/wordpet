@@ -1,8 +1,10 @@
-module Dizzy exposing (tick, stimulate)
+module Petting exposing (dizzyTick, pet)
 
 import Time exposing (Time)
 
 import Model exposing (Model, DizzyState(..))
+import Msg exposing (..)
+import SFX
 
 
 -- cutoff for when we become dizzy
@@ -15,8 +17,8 @@ baseDizziness = 2
 
 
 -- reduce dizziness every frame
-tick : Time -> Model -> Model
-tick diff model =
+dizzyTick : Time -> Model -> Model
+dizzyTick diff model =
   { model | dizziness =
     case model.dizziness of
       Calm -> Calm
@@ -33,6 +35,10 @@ decayTick : Time -> Float -> Float
 decayTick diff decay = decay / 2^(diff / Time.second)
 
 
+-- pet pet pet
+pet : Model -> (Model, Cmd Msg)
+pet = stimulate >> \ model -> model ! [chirp model]
+
 -- increase dizziness when poked
 stimulate : Model -> Model
 stimulate model =
@@ -44,3 +50,9 @@ stimulate model =
           then Overwhelmed { decay = baseDizziness }
           else Enduring { decay = decay + 1 }
       Overwhelmed {decay} -> Overwhelmed { decay = decay + 1 } }
+
+chirp : Model -> Cmd Msg
+chirp model = SFX.play <|
+  case model.dizziness of
+    Overwhelmed _ -> SFX.Screech
+    _ -> SFX.Chirp

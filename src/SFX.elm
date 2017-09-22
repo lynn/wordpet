@@ -8,6 +8,7 @@ type SFX
   | Gulp
   | Hatch
   | Rattle
+  | Screech
 
 chirps : List String
 chirps =
@@ -19,6 +20,11 @@ chomps =
   List.range 1 119
   |> List.map (\i -> "assets/sfx/chomp" ++ toString i ++ ".mp3")
 
+screeches : List String
+screeches =
+  List.range 0 9
+  |> List.map (\i -> "assets/sfx/screech" ++ toString i ++ ".mp3")
+
 play : SFX -> Cmd msg
 play sfx =
   case sfx of
@@ -28,3 +34,4 @@ play sfx =
     Gulp -> Audio.play "assets/sfx/gulp.mp3"
     Hatch -> Audio.play "assets/sfx/hatch.mp3"
     Rattle -> Audio.play "assets/sfx/rattle.mp3"
+    Screech -> Audio.playOneOf screeches
