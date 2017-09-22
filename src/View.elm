@@ -14,10 +14,7 @@ import Style.Font as Font
 import String exposing (contains)
 
 import Json.Decode as Json
-import Random.Pcg as Random exposing (Generator)
-
 import Critter exposing (Critter)
-import OldView
 import Model exposing (Model)
 import Msg exposing (..)
 
@@ -33,13 +30,15 @@ type Styles
   | SpeechBubbleHolder
   | SpeechBubbleTail
 
+type Variations
+  = Invisible
 
 {-| First, we create a stylesheet.
 Styles only deal with properties that are not related to layout, position, or size.
 Generally all properties only have one allowed unit, which is usually px.
 If you want to use something like em
 -}
-stylesheet : StyleSheet Styles v
+stylesheet : StyleSheet Styles Variations
 stylesheet =
   Style.styleSheet
     [ style None [] -- It's handy to have a blank style
@@ -63,7 +62,10 @@ stylesheet =
       , Color.text Color.darkCharcoal
       , Font.center
       ]
-    , style SpeechBubbleHolder []
+    , style SpeechBubbleHolder
+      [ variation Invisible [ opacity 0 ]
+      , prop "transition" "opacity 0.2s ease"
+      ]
     , style SpeechBubbleTail
       [ pseudo "after"
         [ prop "content" "\"\""
@@ -80,7 +82,7 @@ stylesheet =
 
 -- A 300x240 element with one layer of the critter set as the background image.
 -- Usage:  critterLayer "palette3" "body1"
-critterLayer : String -> String -> Element Styles v Msg
+critterLayer : String -> String -> Element Styles Variations Msg
 critterLayer palette part =
   let
     wiggleAnim = "up4px 0.8s alternate infinite steps(2, end)"
@@ -102,35 +104,40 @@ critterLayer palette part =
 
 
 -- A 300x240 element containing critterLayers stacked on top of each other.
-critterElement : Critter -> Element Styles v Msg
+critterElement : Critter -> Element Styles Variations Msg
 critterElement c =
   el CritterStyle [ width (px 300), height (px 240), onClick Pet ] empty
     |> within (List.map (critterLayer c.palette) c.parts)
 
 
-speechBubbleHolder : Element Styles v Msg
-speechBubbleHolder =
-  el SpeechBubbleHolder [ height (px 240), width (px 330) ] empty
+speechBubbleHolder : Model -> Element Styles Variations Msg
+speechBubbleHolder model =
+  el SpeechBubbleHolder
+    [ height (px 240)
+    , width (px 330)
+    , vary Invisible (model.voice == "")
+    ]
+    empty
 
 
-speechBubbleTail : Element Styles v Msg
+speechBubbleTail : Element Styles Variations Msg
 speechBubbleTail =
   el SpeechBubbleTail [ verticalCenter ] empty
 
 
-speechBubble : Model -> Element Styles v Msg
+speechBubble : Model -> Element Styles Variations Msg
 speechBubble model =
   el SpeechBubble
     [ minWidth (px 80)
     , maxWidth (px 330)
-    , minHeight (px 40)
+    , minHeight (px 44)
     , padding 10
     , verticalCenter
     ]
     (paragraph None [] [text model.voice])
 
 
-renderCritter : Model -> Element Styles v Msg
+renderCritter : Model -> Element Styles Variations Msg
 renderCritter model =
   let
     emote : Critter -> Critter
@@ -146,7 +153,7 @@ renderCritter model =
                 _ -> Critter.drool
   in
     critterElement (emote model.critter)
-    |> onRight [ speechBubbleHolder |> within [ speechBubbleTail, speechBubble model ] ]
+      |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
 
 
 onEnter : Msg -> Attribute v Msg
@@ -155,7 +162,7 @@ onEnter msg =
     if code == 13 then Json.succeed msg else Json.fail "not enter"))
 
 
-inputArea : Model -> Element Styles v Msg
+inputArea : Model -> Element Styles Variations Msg
 inputArea model = column None [] <|
   let
     busy = Model.busy model
