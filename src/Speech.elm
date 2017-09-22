@@ -109,7 +109,7 @@ handleSpeech : Msg.VoiceType -> Cmd Msg
 handleSpeech voiceType =
   case voiceType of
     Msg.Speech -> Cmd.none
-    Msg.Babble -> Random.generate Msg.ResetBabbleTimer <| Random.int 10 25
+    Msg.Babble -> Random.generate Msg.ResetBabbleTimer <| Random.int 2 9
 
 -- normalize words for speech training and sampling
 normalizeWord : String -> String

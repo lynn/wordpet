@@ -2,16 +2,23 @@
 <div id="main"></div>
 <link href="https://fonts.googleapis.com/css?family=Lato:400,900" rel="stylesheet">
 <style>
-@keyframes up4px { to { transform: translatey(-4px);} }
+body { background-color: rgb(125, 119, 168); }
 
+.rattle { animation: rattle 0.82s step-end both; }
 @keyframes rattle {
   10%, 90% { transform: translate3d(-1px, 0, 0); }
   20%, 80% { transform: translate3d(2px, 0, 0); }
   30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
-.rattle { animation: rattle 0.82s step-end both; }
-body { background-color: rgb(125, 119, 168); }
+
+.hatch { animation: hatch 1s ease-out both; }
+@keyframes hatch {
+  from { filter: brightness(800%); }
+  to { filter: brightness(100%); }
+}
+
+@keyframes up4px { to { transform: translatey(-4px);} }
 
 /* This selects the *parent* of the speech bubble div (which is a "helper"
    div that style-elments injects, hence this rule's presence in HTML-land).
@@ -20,8 +27,6 @@ body { background-color: rgb(125, 119, 168); }
 div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
     margin-top: auto; margin-bottom: auto;
 }
-
-
 
 </style>
 <script src="https://unpkg.com/compromise/builds/compromise.min.js"></script>
@@ -40,7 +45,7 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
     // Not sure if this helps at all?
     var audioCache = {};
     for (var i = 0; i < 120; i++) {
-        var path = "assets/sfx/chomp" + i + ".mp3"
+        var path = 'assets/sfx/chomp' + i + '.mp3'
         audioCache[path] = new Audio(path);
         audioCache[path].load();
     }
@@ -57,7 +62,7 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
     app.ports.trigger.subscribe(function(className) {
         var critter = document.getElementById('critter');
         critter.classList.add(className);
-        critter.addEventListener("animationend", function() {
+        critter.addEventListener('animationend', function() {
             critter.classList.remove(className);
         }, false);
     });

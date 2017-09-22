@@ -1,6 +1,7 @@
 import Random.Pcg as Random exposing (Generator)
 import Html exposing (..)
 
+import Animation
 import AnimationFrame
 import ChompAnimation
 import Critter
@@ -45,7 +46,7 @@ update msg model = case msg of
       then Speech.speak <| Dizzy.stimulate model -- TODO maybe change pet sfx when overstimulated
       else model ! [SFX.play SFX.Chirp] -- TODO: some sort of better feedback for petting the egg
   Vocalize voicetype voice ->
-    maybeHatch { model | voice = voice } ! [Speech.handleSpeech voicetype]
+    maybeHatch { model | voice = voice } |> Util.addCmd (Speech.handleSpeech voicetype)
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
   SetCritter c ->
@@ -69,10 +70,10 @@ subscriptions model =
     , Compromise.receiveNormalize ReceivedNormalize ]
 
 -- the first time we babble, hatch and set our name to our first word
-maybeHatch : Model -> Model
+maybeHatch : Model -> (Model, Cmd Msg)
 maybeHatch model =
   case model.hatched of
-    Just _ -> model
+    Just _ -> model ! []
     -- `model.voice` will be punctuated, so strip that first
     Nothing -> { model | hatched =
-      Just <| String.dropRight 1 model.voice }
+      Just <| String.dropRight 1 model.voice } ! [Animation.trigger "hatch"]

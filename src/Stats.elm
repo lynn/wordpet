@@ -6,6 +6,7 @@ names =
   , "Adventure"
   , "Aerodynamics"
   , "Affection"
+  , "Attention Span"
   , "Beepiness"
   , "Bookishness"
   , "Buoyancy"
