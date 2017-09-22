@@ -10,6 +10,7 @@ import Regex exposing (Regex, regex)
 import Model exposing (Model)
 import Msg exposing (Msg)
 
+import Bad
 import Maybe.Extra as Maybe
 
 
@@ -88,8 +89,9 @@ babbleTextSatisfying predicate model =
 
 -- is this an ok name?
 namePredicate : Model -> String -> Bool
-namePredicate model name =
-  String.length name >= 4
+namePredicate model babble =
+  let name = String.dropRight 1 babble
+  in String.length name >= 4 && not (List.member name Bad.words)
 
 -- sample the babble model.
 -- if we didn't hatch yet, try to make ok names
