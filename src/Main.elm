@@ -68,4 +68,6 @@ maybeHatch : Model -> Model
 maybeHatch model =
   case model.hatched of
     Just _ -> model
-    Nothing -> { model | hatched = Just model.voice }
+    -- `model.voice` will be punctuated, so strip that first
+    Nothing -> { model | hatched =
+      Just <| String.dropRight 1 model.voice }

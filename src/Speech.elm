@@ -52,7 +52,7 @@ speak = babbleTick >> \ model ->
           -- if the speech model is empty, babble instead
           if List.isEmpty voice
             then Random.map (Msg.Vocalize Msg.Babble) <|
-              babbleWalk model
+              babbleText model
             else Random.constant <|
               Msg.Vocalize Msg.Speech (String.join " " voice))) )
 
@@ -66,12 +66,14 @@ maybeBabble model = if model.babbleTimer == 0
   then babble model
   else Cmd.none
 
-babbleWalk : Model -> Random.Generator String
-babbleWalk = Random.map String.fromList << Markov.walk 1 identity << .babbles
+babbleText : Model -> Random.Generator String
+babbleText model = Random.map2 (++)
+  (Random.map String.fromList << Markov.walk 1 identity <| model.babbles)
+  (Random.map (Maybe.withDefault "☺") <| Random.sample ["!", "?", "~", "…"])
 
 -- sample the babble model
 babble : Model -> Cmd Msg
-babble = Random.generate (Msg.Vocalize Msg.Babble) << babbleWalk
+babble = Random.generate (Msg.Vocalize Msg.Babble) << babbleText
 
 -- handle any additional work after speaking:
 -- when we babble, reset the babble timer, so we don't babble too often
