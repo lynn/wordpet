@@ -2,6 +2,7 @@ module Critter exposing (..)
 import Random.Pcg as Random exposing (Generator)
 import List.Extra as List
 import Maybe.Extra as Maybe
+import Stats
 import Time exposing (Time)
 
 -- A *visual* representation of the critter you're taking care of.
@@ -49,47 +50,6 @@ partsGenerator =
     |> sequence
     |> Random.map Maybe.values
 
-statNames : List String
-statNames =
-  [ "Adventure"
-  , "Aerodynamics"
-  , "Affection"
-  , "Bookishness"
-  , "Buoyancy"
-  , "Caprice"
-  , "Charm"
-  , "Clumsiness"
-  , "Curiosity"
-  , "Fashion"
-  , "Friendship"
-  , "Grace"
-  , "Guts"
-  , "Honesty"
-  , "Humor"
-  , "Jitteriness"
-  , "Laziness"
-  , "Magic"
-  , "Moé"
-  , "Mystery"
-  , "Optimism"
-  , "Patience"
-  , "Pep"
-  , "Persistence"
-  , "Puns"
-  , "Rhyme"
-  , "Shyness"
-  , "Sleepiness"
-  , "Speed"
-  , "Spunk"
-  , "Squishiness"
-  , "Strength"
-  , "Stress"
-  , "Tenderness"
-  , "Viscosity"
-  , "Whimsy"
-  , "Wisdom"
-  ]
-
 -- Pick out a random element x from a list, generating (Just x, all elements but x).
 -- If the list is empty, (Nothing, []) is generated.
 pickOut : List a -> Generator (Maybe a, List a)
@@ -110,7 +70,7 @@ shuffle xs =
 -- Generate `count` random stats.
 statsGenerator : Int -> Generator (List (String, Int))
 statsGenerator count =
-  shuffle statNames
+  shuffle Stats.names
   |> Random.andThen (\names ->
     Random.list count (Random.int 2 5)
     |> Random.map (\scores ->

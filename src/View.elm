@@ -126,7 +126,7 @@ critterLayer palette part =
 -- A 300x240 element containing critterLayers stacked on top of each other.
 critterElement : Critter -> MyElement
 critterElement c =
-  el CritterStyle [ width (px 300), height (px 240), onClick Pet ] empty
+  el CritterStyle [ id "critter", width (px 300), height (px 240), onClick Pet ] empty
     |> within (List.map (critterLayer c.palette) c.parts)
 
 
