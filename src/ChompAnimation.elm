@@ -19,28 +19,41 @@ tick : Time -> Model -> (Model, Cmd Msg)
 tick diff model =
   case model.eating of
     Nothing -> model ! []
-    Just ({timer, chunkSize} as eating) ->
+    Just ({timer, state} as eating) ->
       if timer <= 0
-        then chomp chunkSize model
+        then chomp state model
         else { model | eating = Just { eating | timer = timer - diff } } ! []
 
 -- Take a bite out of the meal, and reset the eatingTimer if we're not done eating.
 -- If we are done eating, chirp, refocus the plate, and maybe babble.
-chomp : Int -> Model -> (Model, Cmd Msg)
-chomp chunkSize model =
+chomp : Model.MealState -> Model -> (Model, Cmd Msg)
+chomp oldState model =
   let
-    remaining = String.dropLeft chunkSize model.meal
-    done = String.isEmpty remaining
+    remaining : String
+    remaining =
+      case oldState of
+        Model.Chomping {chunkSize} -> String.dropLeft chunkSize model.meal
+        Model.Swallowing -> ""
+
+    newState : Maybe Model.MealState
+    newState =
+      case oldState of
+        Model.Swallowing -> Nothing
+        Model.Chomping c -> Just <|
+          if String.isEmpty remaining
+            then Model.Swallowing
+            else Model.Chomping c
   in
     { model
       | meal = remaining
-      , eating = if done
-        then Nothing
-        else Just { timer = model.critter.chompDuration, chunkSize = chunkSize }
-      , voice = if done then "" else "♫" }
-    ! if done
-      then [refocusPlate, Speech.maybeBabble model]
-      else [SFX.play SFX.Chomp]
+      , eating = newState |> Maybe.map (\ state ->
+        { timer = model.critter.chompDuration
+        , state = state })
+      , voice = if Maybe.isJust newState then "♫" else "" }
+    ! if Maybe.isJust newState
+      then [SFX.play SFX.Chomp] -- chomping
+      else [refocusPlate, Speech.maybeBabble model] -- swallowing
+        -- TODO: swallow / babble / hatch sfx!
 
 -- set up the chomp animation!
 setup : Model -> (Model, Cmd Msg)
@@ -48,10 +61,11 @@ setup model =
   { model
     | eating = Just
       { timer = 0 -- chomp immediately!
-      , chunkSize =
-        if Maybe.isJust model.hatched
-          then Basics.max 8 (String.length model.meal // 8)
-          else 1 } }
+      , state = Model.Chomping
+        { chunkSize =
+          if Maybe.isJust model.hatched
+            then Basics.max 8 (String.length model.meal // 8)
+            else 1 } } }
   ! [scrollPlate]
 
 refocusPlate : Cmd Msg
