@@ -12,6 +12,7 @@ import Msg exposing (Msg)
 
 import Bad
 import Maybe.Extra as Maybe
+import Petting exposing (isOverwhelmed)
 
 
 -- train the babble model
@@ -47,7 +48,7 @@ train = babbleTick >> \ model ->
 speak : Model -> (Model, Cmd Msg)
 speak = babbleTick >> \ model ->
   ( model
-  , if model.babbleTimer == 0
+  , if model.babbleTimer == 0 || isOverwhelmed model
     then babble model
     else Random.generate identity
       (Markov.walk 2 normalizeWord model.speech |>

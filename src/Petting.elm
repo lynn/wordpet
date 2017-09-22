@@ -1,4 +1,4 @@
-module Petting exposing (dizzyTick, pet)
+module Petting exposing (dizzyTick, pet, isOverwhelmed)
 
 import Time exposing (Time)
 
@@ -65,4 +65,4 @@ isOverwhelmed : Model -> Bool
 isOverwhelmed model =
   case model.dizziness of
     Overwhelmed _ -> True
-    _ - False
+    _ -> False
