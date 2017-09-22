@@ -2,14 +2,17 @@ module SFX exposing (..)
 import Audio
 
 type SFX
-  = Chirp
+  = None
+  | Chirp
   | Chomp
+  | Gulp
+  | Hatch
+  | Rattle
 
 chirps : List String
 chirps =
-  [ "assets/sfx/tweet0.mp3"
-  , "assets/sfx/tweet1.mp3"
-  , "assets/sfx/tweet2.mp3" ]
+  List.range 0 12
+  |> List.map (\i -> "assets/sfx/tweet" ++ toString i ++ ".mp3")
 
 chomps : List String
 chomps =
@@ -19,5 +22,9 @@ chomps =
 play : SFX -> Cmd msg
 play sfx =
   case sfx of
+    None -> Cmd.none
     Chirp -> Audio.playOneOf chirps
     Chomp -> Audio.playOneOf chomps
+    Gulp -> Audio.play "assets/sfx/gulp.mp3"
+    Hatch -> Audio.play "assets/sfx/hatch.mp3"
+    Rattle -> Audio.play "assets/sfx/rattle.mp3"

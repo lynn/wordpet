@@ -50,10 +50,13 @@ chomp oldState model =
         { timer = model.critter.chompDuration
         , state = state })
       , voice = if Maybe.isJust newState then "♫" else "" }
-    ! if Maybe.isJust newState
-      then [SFX.play SFX.Chomp] -- chomping
-      else [refocusPlate, Speech.maybeBabble model] -- swallowing
-        -- TODO: swallow / babble / hatch sfx!
+    ! case newState of
+        Just _ -> -- still eating...
+          [SFX.play (if Maybe.isJust model.hatched then SFX.Chomp else SFX.None)]
+        Nothing -> -- done!
+          [SFX.play (if Maybe.isJust model.hatched then SFX.Gulp else if model.babbleTimer == 0 then SFX.Hatch else SFX.Rattle)
+          , refocusPlate
+          , Speech.maybeBabble model]
 
 -- set up the chomp animation!
 setup : Model -> (Model, Cmd Msg)
