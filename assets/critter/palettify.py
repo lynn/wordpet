@@ -18,6 +18,7 @@ palettes = zip(palettes[0::2], palettes[1::2])
 
 for pnum, (bright, dark) in enumerate(palettes):
     pal = 'palette' + str(pnum)
+    print(pal + '...')
     try:
         os.makedirs(pal)
     except OSError as e:
@@ -27,5 +28,6 @@ for pnum, (bright, dark) in enumerate(palettes):
     for fn in glob.glob('orig/*.png'):
         im = Image.open(fn)
         w, h = im.size
+        im = im.resize((3*w, 3*h), Image.NEAREST)
         im.putdata([recolor(px, bright, dark) for px in im.getdata()])
         im.save(fn.replace('orig', pal))

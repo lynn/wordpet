@@ -116,7 +116,6 @@ critterLayer palette part =
     , inlineStyle
       [ ("background-image", imageUrl)
       , ("background-size", "100%")
-      , ("image-rendering", "pixelated")
       , ("opacity", if part |> contains "shadow" then "0.75" else "1.0")
       ]
     ]
