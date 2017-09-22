@@ -59,3 +59,10 @@ chirp model = SFX.play <|
   case model.dizziness of
     Overwhelmed _ -> SFX.Screech
     _ -> SFX.Chirp
+
+
+isOverwhelmed : Model -> Bool
+isOverwhelmed model =
+  case model.dizziness of
+    Overwhelmed _ -> True
+    _ - False
