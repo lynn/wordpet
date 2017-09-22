@@ -1,17 +1,15 @@
 module Speech exposing (train, trainSpeech, speak, maybeBabble, handleSpeech)
 
-import Dict
 import Markov
 import Random.Pcg as Random
 
 import Compromise
 import Regex exposing (Regex, regex)
 
-import Model exposing (Model)
+import Model exposing (Model, isEgg, isHatched)
 import Msg exposing (Msg)
 
 import Bad
-import Maybe.Extra as Maybe
 import Petting exposing (isOverwhelmed)
 
 
@@ -35,14 +33,13 @@ trainSpeech sentences model =
 -- train the appropriate model
 train : Model -> (Model, Cmd Msg)
 train = babbleTick >> \ model ->
-  case model.hatched of
-    Nothing ->
-      -- not yet hatched! train the babble model
-      trainBabbles model ! []
-    Just _ ->
-      -- hatched! train the speech model.
-      -- first we need to split the meal into sentences.
-      model ! [Compromise.sentences model.meal]
+  if isEgg model then
+    -- not yet hatched! train the babble model
+    trainBabbles model ! []
+  else
+    -- hatched! train the speech model.
+    -- first we need to split the meal into sentences.
+    model ! [Compromise.sentences model.meal]
 
 -- sample the appropriate model, usually speaking but sometimes babbling
 speak : Model -> (Model, Cmd Msg)
@@ -99,7 +96,7 @@ namePredicate model babble =
 babble : Model -> Cmd Msg
 babble model =
   model
-  |> (if Maybe.isJust model.hatched
+  |> (if isHatched model
       then babbleText
       else babbleTextSatisfying (namePredicate model))
   |> Random.generate (Msg.Vocalize Msg.Babble)

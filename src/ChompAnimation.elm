@@ -8,7 +8,7 @@ import Maybe.Extra as Maybe
 
 import Time exposing (Time)
 
-import Model exposing (Model)
+import Model exposing (Model, isEgg, isHatched)
 import Msg exposing (Msg)
 
 import Animation
@@ -55,7 +55,7 @@ chomp oldState model =
         Just _ -> -- still eating...
           [SFX.play SFX.Chomp]
         Nothing -> -- done!
-          [SFX.play (if Maybe.isJust model.hatched then SFX.Gulp else if model.babbleTimer == 0 then SFX.Hatch else SFX.Rattle)
+          [SFX.play (if isHatched model then SFX.Gulp else if model.babbleTimer == 0 then SFX.Hatch else SFX.Rattle)
           , refocusPlate
           , Speech.maybeBabble model]
 
@@ -64,7 +64,7 @@ finishEating : Model -> Cmd Msg
 finishEating model = Cmd.batch
   [ refocusPlate
   , Speech.maybeBabble model
-  , if Maybe.isJust model.hatched then
+  , if isHatched model then
       SFX.play SFX.Gulp
     else if model.babbleTimer == 0 then
       SFX.play SFX.Hatch
@@ -77,7 +77,7 @@ finishEating model = Cmd.batch
 -- set up the chomp animation!
 setup : Model -> (Model, Cmd Msg)
 setup model =
-  if model.hatched == Nothing then
+  if isEgg model then
     { model | meal = "" } ! [finishEating model]
   else
     { model

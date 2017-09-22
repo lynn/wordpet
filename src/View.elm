@@ -15,7 +15,7 @@ import String exposing (contains)
 
 import Json.Decode as Json
 import Critter exposing (Critter)
-import Model exposing (Model)
+import Model exposing (Model, isHatched, isEgg)
 import Msg exposing (..)
 
 
@@ -163,9 +163,9 @@ renderCritter model =
   let
     emote : Critter -> Critter
     emote =
-      case model.hatched of
-        Nothing -> Critter.egg (toFloat (6 - model.babbleTimer) / 6.0)
-        Just _ ->
+      if isEgg model
+        then Critter.egg (toFloat (6 - model.babbleTimer) / 6.0)
+        else
           case model.eating of
             Just e -> Critter.eating e.timer
             Nothing ->

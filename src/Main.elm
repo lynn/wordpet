@@ -15,7 +15,7 @@ import Util
 
 import Maybe.Extra as Maybe
 
-import Model exposing (Model)
+import Model exposing (Model, isEgg, isHatched)
 import Msg exposing (..)
 
 import SFX
@@ -42,7 +42,7 @@ update msg model = case msg of
   ChompTick diff -> ChompAnimation.tick diff model
   DizzyTick diff -> Petting.dizzyTick diff model ! []
   Pet ->
-    if Maybe.isJust model.hatched
+    if isHatched model
       then Petting.pet model
         |> Util.cmdThen Speech.speak
       else model ! [SFX.play SFX.Rattle]
@@ -73,8 +73,9 @@ subscriptions model =
 -- the first time we babble, hatch and set our name to our first word
 maybeHatch : Model -> (Model, Cmd Msg)
 maybeHatch model =
-  case model.hatched of
-    Just _ -> model ! []
-    -- `model.voice` will be punctuated, so strip that first
-    Nothing -> { model | hatched =
-      Just <| String.dropRight 1 model.voice } ! [Animation.trigger "hatch"]
+  if isHatched model
+    then model ! []
+    else
+      -- `model.voice` will be punctuated, so strip that first
+      let name = String.dropRight 1 model.voice
+      in { model | hatched = Just name } ! [Animation.trigger "hatch"]
