@@ -10,6 +10,8 @@ import Regex exposing (Regex, regex)
 import Model exposing (Model)
 import Msg exposing (Msg)
 
+import Maybe.Extra as Maybe
+
 
 -- train the babble model
 trainBabbles : Model -> Model
@@ -70,9 +72,34 @@ babbleText : Model -> Random.Generator String
 babbleText model = Markov.walk 1 identity model.babbles
   |> Random.map (\ bab -> String.fromList bab ++ model.critter.punctuation)
 
--- sample the babble model
+-- Try (up to `tries` times) to generate an `a` satisfying `predicate`, then give up.
+trySatisfy : Int -> (a -> Bool) -> Random.Generator a -> Random.Generator a
+trySatisfy tries predicate gen =
+  if tries == 0
+    then gen
+    else gen |> Random.andThen (\result ->
+      if predicate result
+        then Random.constant result
+        else trySatisfy (tries - 1) predicate gen)
+
+babbleTextSatisfying : (String -> Bool) -> Model -> Random.Generator String
+babbleTextSatisfying predicate model =
+  trySatisfy 100 predicate (babbleText model)
+
+-- is this an ok name?
+namePredicate : Model -> String -> Bool
+namePredicate model name =
+  String.length name >= 4
+
+-- sample the babble model.
+-- if we didn't hatch yet, try to make ok names
 babble : Model -> Cmd Msg
-babble = Random.generate (Msg.Vocalize Msg.Babble) << babbleText
+babble model =
+  model
+  |> (if Maybe.isJust model.hatched
+      then babbleText
+      else babbleTextSatisfying (namePredicate model))
+  |> Random.generate (Msg.Vocalize Msg.Babble)
 
 -- handle any additional work after speaking:
 -- when we babble, reset the babble timer, so we don't babble too often

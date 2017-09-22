@@ -2,7 +2,8 @@ module Stats exposing (names)
 
 names : List String
 names =
-  [ "Adventure"
+  [ "Acidity"
+  , "Adventure"
   , "Aerodynamics"
   , "Affection"
   , "Beepiness"
@@ -13,6 +14,7 @@ names =
   , "Clumsiness"
   , "Curiosity"
   , "Daydreaming"
+  , "Difficulty"
   , "Entrepreneurship"
   , "Fashion"
   , "Favorite Number"
@@ -23,6 +25,7 @@ names =
   , "Honesty"
   , "Humor"
   , "Imagination"
+  , "Insubordination"
   , "Jitteriness"
   , "Laziness"
   , "Magic"
@@ -47,6 +50,7 @@ names =
   , "Squishiness"
   , "Stress"
   , "Tenderness"
+  , "Valor"
   , "Viscosity"
   , "Whimsy"
   , "Wisdom"
