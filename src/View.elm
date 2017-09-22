@@ -200,6 +200,7 @@ inputArea model = column None [] <|
         , value = model.meal
         , label = Input.placeholder { text = "feed words", label = Input.hiddenLabel "word to feed" }
         , options = options }
+        |> onRight [ button None [ onClick Feed ] (text "feed!") ]
       ]
     Just name ->
       [ Input.multiline None

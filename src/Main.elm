@@ -45,7 +45,7 @@ update msg model = case msg of
     if isHatched model
       then Petting.pet model
         |> Util.cmdThen Speech.speak
-      else model ! [SFX.play SFX.Rattle]
+      else model ! [Animation.trigger "rattle", SFX.play SFX.Rattle]
   Vocalize voicetype voice ->
     maybeHatch { model | voice = voice } |> Util.addCmd (Speech.handleSpeech voicetype)
   ResetBabbleTimer t ->
