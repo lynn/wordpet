@@ -238,7 +238,7 @@ view model =
   Element.layout stylesheet <|
     full Main [center] <| column None [center, spacing 20] <|
       [ h1 H1 [paddingTop 20] (text "wordpet")
-      , renderCritter model
+      , el None [] (renderCritter model)
         |> onLeft [ statBox model ]
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model

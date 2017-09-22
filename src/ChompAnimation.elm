@@ -11,6 +11,7 @@ import Time exposing (Time)
 import Model exposing (Model)
 import Msg exposing (Msg)
 
+import Animation
 import SFX
 import Speech
 
@@ -63,13 +64,15 @@ finishEating : Model -> Cmd Msg
 finishEating model = Cmd.batch
   [ refocusPlate
   , Speech.maybeBabble model
-  , SFX.play <|
-    if Maybe.isJust model.hatched then
-      SFX.Gulp
+  , if Maybe.isJust model.hatched then
+      SFX.play SFX.Gulp
     else if model.babbleTimer == 0 then
-      SFX.Hatch
+      SFX.play SFX.Hatch
     else
-      SFX.Rattle ]
+      Cmd.batch
+        [ SFX.play SFX.Rattle
+        , Animation.trigger "rattle" ]
+  ]
 
 -- set up the chomp animation!
 setup : Model -> (Model, Cmd Msg)
