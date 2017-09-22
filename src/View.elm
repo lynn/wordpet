@@ -169,9 +169,12 @@ renderCritter model =
           case model.eating of
             Just e -> Critter.eating e.timer
             Nothing ->
-              case model.meal of
-                "" -> identity
-                _ -> Critter.drool
+              case model.dizziness of
+                Model.Overwhelmed _ -> Critter.dizzy
+                _ ->
+                  case model.meal of
+                    "" -> identity
+                    _ -> Critter.drool
   in
     critterElement (emote model.critter)
 

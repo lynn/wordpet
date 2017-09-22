@@ -2,21 +2,22 @@ import Random.Pcg as Random exposing (Generator)
 import Html exposing (..)
 
 import AnimationFrame
-
 import ChompAnimation
+import Critter
+import Dizzy
 import FoodProcessor
 import Speech
 
 import Compromise
-import Critter
 import Debug
-import Maybe.Extra as Maybe
 import Util
 
-import SFX
+import Maybe.Extra as Maybe
 
 import Model exposing (Model)
 import Msg exposing (..)
+
+import SFX
 import View
 
 
@@ -38,9 +39,10 @@ update msg model = case msg of
       else Speech.train model
         |> Util.cmdThen ChompAnimation.setup
   ChompTick diff -> ChompAnimation.tick diff model
+  DizzyTick diff -> Dizzy.tick diff model ! []
   Pet ->
     if Maybe.isJust model.hatched
-      then Speech.speak model
+      then Speech.speak <| Dizzy.stimulate model -- TODO maybe change pet sfx when overstimulated
       else model ! [SFX.play SFX.Chirp] -- TODO: some sort of better feedback for petting the egg
   Vocalize voicetype voice ->
     maybeHatch { model | voice = voice } ! [Speech.handleSpeech voicetype]
@@ -60,6 +62,8 @@ subscriptions model =
   in Sub.batch
     -- Listen to chomp ticks so long as we're eating words.
     [ when (Maybe.isJust model.eating) (AnimationFrame.diffs ChompTick)
+    -- Listen to dizzy ticks if we're
+    , when (model.dizziness /= Model.Calm) (AnimationFrame.diffs DizzyTick)
     -- Always listen to Compromise ports.
     , Compromise.receiveSentences ReceivedSentences
     , Compromise.receiveNormalize ReceivedNormalize ]

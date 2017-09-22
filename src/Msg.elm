@@ -9,6 +9,7 @@ type Msg
   | Pet
   | Vocalize VoiceType String
   | ChompTick Time
+  | DizzyTick Time
   | ResetBabbleTimer Int
   | SetCritter Critter
   -- NLP ports

@@ -15,11 +15,17 @@ type alias Model =
   , meal : String
   , eating : Maybe { timer : Time, state : MealState }
   , voice : String
+  , dizziness : DizzyState
   }
 
 type MealState
   = Chomping { chunkSize : Int }
   | Swallowing
+
+type DizzyState
+  = Calm
+  | Enduring { decay : Float }
+  | Overwhelmed { decay : Float }
 
 initial : Model
 initial =
@@ -30,7 +36,8 @@ initial =
   , hatched = Nothing
   , meal = ""
   , eating = Nothing
-  , voice = "" }
+  , voice = ""
+  , dizziness = Calm }
 
 busy : Model -> Bool
 busy model =
