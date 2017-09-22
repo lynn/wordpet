@@ -25,13 +25,19 @@ type Styles
   = None
   | Main
   | H1
+  | H2
   | CritterStyle
   | SpeechBubble
   | SpeechBubbleHolder
   | SpeechBubbleTail
+  | StatBox
+  | StatName
+  | StatValue
 
 type Variations
   = Invisible
+
+type alias MyElement = Element Styles Variations Msg
 
 {-| First, we create a stylesheet.
 Styles only deal with properties that are not related to layout, position, or size.
@@ -52,15 +58,18 @@ stylesheet =
     , style H1
       [ Font.size 36
       ]
+    , style H2
+      [ Font.size 30
+      ]
     , style CritterStyle
       [ cursor "pointer"
       ]
     , style SpeechBubble
-      [ Font.size 18
-      , Border.rounded 10.0
+      [ Border.rounded 10.0
       , Color.background (Color.rgba 255 255 255 0.7)
       , Color.text Color.darkCharcoal
       , Font.center
+      , Font.size 18
       ]
     , style SpeechBubbleHolder
       [ variation Invisible [ opacity 0 ]
@@ -77,12 +86,20 @@ stylesheet =
         , prop "border-color" "transparent rgba(255,255,255,0.7)"
         ]
       ]
+    , style StatBox
+      [ Border.rounded 10.0
+      , Color.background (Color.rgba 255 255 255 0.7)
+      , Color.text Color.darkCharcoal
+      , Font.size 18
+      ]
+    , style StatName []
+    , style StatValue []
     ]
 
 
 -- A 300x240 element with one layer of the critter set as the background image.
 -- Usage:  critterLayer "palette3" "body1"
-critterLayer : String -> String -> Element Styles Variations Msg
+critterLayer : String -> String -> MyElement
 critterLayer palette part =
   let
     wiggleAnim = "up4px 0.8s alternate infinite steps(2, end)"
@@ -104,13 +121,13 @@ critterLayer palette part =
 
 
 -- A 300x240 element containing critterLayers stacked on top of each other.
-critterElement : Critter -> Element Styles Variations Msg
+critterElement : Critter -> MyElement
 critterElement c =
   el CritterStyle [ width (px 300), height (px 240), onClick Pet ] empty
     |> within (List.map (critterLayer c.palette) c.parts)
 
 
-speechBubbleHolder : Model -> Element Styles Variations Msg
+speechBubbleHolder : Model -> MyElement
 speechBubbleHolder model =
   el SpeechBubbleHolder
     [ height (px 240)
@@ -121,12 +138,12 @@ speechBubbleHolder model =
     empty
 
 
-speechBubbleTail : Element Styles Variations Msg
+speechBubbleTail : MyElement
 speechBubbleTail =
   el SpeechBubbleTail [ verticalCenter ] empty
 
 
-speechBubble : Model -> Element Styles Variations Msg
+speechBubble : Model -> MyElement
 speechBubble model =
   el SpeechBubble
     [ minWidth (px 80)
@@ -138,7 +155,7 @@ speechBubble model =
     (paragraph None [] [text model.voice])
 
 
-renderCritter : Model -> Element Styles Variations Msg
+renderCritter : Model -> MyElement
 renderCritter model =
   let
     emote : Critter -> Critter
@@ -154,16 +171,15 @@ renderCritter model =
                 _ -> Critter.drool
   in
     critterElement (emote model.critter)
-      |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
 
 
-onEnter : Msg -> Attribute v Msg
+onEnter : msg -> Attribute v msg
 onEnter msg =
   on "keydown" (keyCode |> Json.andThen (\code ->
     if code == 13 then Json.succeed msg else Json.fail "not enter"))
 
 
-inputArea : Model -> Element Styles Variations Msg
+inputArea : Model -> MyElement
 inputArea model = column None [] <|
   let
     busy = Model.busy model
@@ -180,8 +196,7 @@ inputArea model = column None [] <|
         , options = options }
       ]
     Just name ->
-      [ text name
-      , Input.multiline None
+      [ Input.multiline None
         [ id "plate" ]
         { onChange = TrackInput
         , value = model.meal
@@ -191,12 +206,31 @@ inputArea model = column None [] <|
         (if canFeed then [onClick Feed] else [])
         (text "Feed!") ]
 
+stat : String -> Int -> MyElement
+stat name value =
+  let stars n = String.repeat n "★" ++ String.repeat (5 - n) "☆"
+  in el None [height (px 25)] empty
+    |> within
+      [ el StatName [alignLeft] (text name)
+      , el StatValue [alignRight] (text (stars value)) ]
+
+statBox : Model -> MyElement
+statBox model =
+  el StatBox
+    [ width (px 250)
+    , minHeight (px 44)
+    , padding 20
+    ]
+    (column None [] [ stat "Charm" 4, stat "Squeamishness" 2, stat "Gravy" 5 ])
 
 view : Model -> Html Msg
 view model =
   Element.layout stylesheet <|
     full Main [center] <| column None [center, spacing 20] <|
       [ h1 H1 [paddingTop 20] (text "wordpet")
+      , h2 H2 [] (text <| String.toLower <| Maybe.withDefault "???" model.hatched)
       , renderCritter model
+        |> onLeft [ statBox model ]
+        |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model
       ]
