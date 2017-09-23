@@ -68,8 +68,20 @@ maybeBabble model = if model.babbleTimer == 0
   else Cmd.none
 
 babbleText : Model -> Random.Generator String
-babbleText model = Markov.walk 1 identity model.babbles
-  |> Random.map (\ bab -> String.fromList bab ++ model.critter.punctuation)
+babbleText model =
+  let
+    bab = Random.map String.fromList <| Markov.walk 1 identity model.babbles
+    randomRepeat i j s = Random.map (flip String.repeat s) <|
+      Random.int i j
+    punctuation =
+      case model.dizziness of
+        Model.Overwhelmed _ ->
+          case model.critter.punctuation of
+            "…" -> Random.map ("…" |> (++)) <| randomRepeat 1 2 "!"
+            p   -> randomRepeat 2 3 p
+        _ -> Random.constant model.critter.punctuation
+  in
+    Random.map2 (++) bab punctuation
 
 -- Try (up to `tries` times) to generate an `a` satisfying `predicate`, then give up.
 trySatisfy : Int -> (a -> Bool) -> Random.Generator a -> Random.Generator a
