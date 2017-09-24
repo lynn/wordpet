@@ -205,22 +205,23 @@ inputArea model = column None [] <|
     Nothing ->
       [ Input.text None
         [ id "plate"
+        , padding 4
         , onEnter Feed ]
         { onChange = TrackInput
         , value = model.meal
-        , label = Input.placeholder { text = "feed words", label = Input.hiddenLabel "word to feed" }
+        , label = Input.placeholder { text = "Think of a word.", label = Input.hiddenLabel "Word to teach" }
         , options = options }
-        |> onRight [ button None [ onClick Feed ] (text "feed!") ]
+        |> onRight [ button None [ padding 4, onClick Feed ] (text "➤") ]
       ]
     Just name ->
       [ Input.multiline None
-        [ id "plate" ]
+        [ id "plate", height (px 200), width (px 300), padding 4 ]
         { onChange = TrackInput
         , value = model.meal
-        , label = Input.placeholder { text = "feed paragraphs", label = Input.hiddenLabel "paragraphs to feed" }
+        , label = Input.placeholder { text = "What's for dinner? Copy paragraphs from anywhere you like, and click “Feed.” Then try petting your critter.", label = Input.hiddenLabel "Paragraphs to feed" }
         , options = options }
       , button None
-        (if canFeed then [onClick Feed] else [])
+        ((if canFeed then [onClick Feed] else []) ++ [padding 4])
         (text "Feed!") ]
 
 statRow : (String, Int) -> MyElement
