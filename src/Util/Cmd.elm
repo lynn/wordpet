@@ -1,4 +1,4 @@
-module Util exposing (..)
+module Util.Cmd exposing (..)
 
 addCmd : Cmd msg -> (model, Cmd msg) -> (model, Cmd msg)
 addCmd ours (model, theirs) = (model, Cmd.batch [ours, theirs])

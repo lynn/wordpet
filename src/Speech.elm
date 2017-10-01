@@ -2,6 +2,7 @@ module Speech exposing (train, trainSpeech, speak, maybeBabble, handleSpeech)
 
 import Markov
 import Random.Pcg as Random
+import Util.Random as Random exposing (trySatisfy)
 
 import Compromise
 import Regex exposing (Regex, regex)
@@ -76,30 +77,20 @@ babbleText model =
       case model.dizziness of
         Model.Overwhelmed _ ->
           case model.critter.punctuation of
-            "…" -> Random.choices [Random.constant "…!", Random.constant "…!!"]
+            "…" -> Random.oneOf ["…!", "…!!"]
             p   -> randomRepeat 2 3 p
         _ -> Random.constant model.critter.punctuation
   in
     Random.map2 (++) bab punctuation
-
--- Try (up to `tries` times) to generate an `a` satisfying `predicate`, then give up.
-trySatisfy : Int -> (a -> Bool) -> Random.Generator a -> Random.Generator a
-trySatisfy tries predicate gen =
-  if tries == 0
-    then gen
-    else gen |> Random.andThen (\result ->
-      if predicate result
-        then Random.constant result
-        else trySatisfy (tries - 1) predicate gen)
 
 babbleTextSatisfying : (String -> Bool) -> Model -> Random.Generator String
 babbleTextSatisfying predicate model =
   trySatisfy 100 predicate (babbleText model)
 
 -- Is this babble an adequate name? We check for ≥4 characters and no naughty cuss words.
--- TODO: disallow names that equal a word the user taught the egg. (this is why `model` is passed here)
-namePredicate : Model -> String -> Bool
-namePredicate model babble =
+-- TODO: avoid names that equal a word the user taught the egg. (this is why `model` is passed here)
+isGoodName : Model -> String -> Bool
+isGoodName model babble =
   let name = String.dropRight 1 babble
   in String.length name >= 4 && not (List.member name Bad.words)
 
@@ -110,7 +101,7 @@ babble model =
   model
   |> (if isHatched model
       then babbleText
-      else babbleTextSatisfying (namePredicate model))
+      else babbleTextSatisfying (isGoodName model))
   |> Random.generate (Msg.Vocalize Msg.Babble)
 
 -- Handle any additional work after speaking:

@@ -1,9 +1,9 @@
 module Critter exposing (..)
 import Random.Pcg as Random exposing (Generator)
-import List.Extra as List
 import Maybe.Extra as Maybe
 import Stats
 import Time exposing (Time)
+import Util.Random exposing (oneOf, shuffle)
 
 -- A *visual* representation of the critter you're taking care of.
 -- e.g. { palette = "palette5", parts = ["wings2", "body0", "eyes1"], dizzy = "dizzy0", ... }
@@ -34,7 +34,7 @@ pick p options =
   Random.float 0 1
   |> Random.andThen (\x ->
     if x <= p
-      then Random.map Just (Random.choices (List.map Random.constant options))
+      then Random.map Just (oneOf options)
       else Random.constant Nothing)
 
 -- A generator for critter parts.
@@ -52,23 +52,6 @@ partsGenerator =
     ]
     |> sequence
     |> Random.map Maybe.values
-
--- Pick out a random element x from a list, generating (Just x, all elements but x).
--- If the list is empty, (Nothing, []) is generated.
-pickOut : List a -> Generator (Maybe a, List a)
-pickOut xs =
-  Random.int 0 (List.length xs - 1)
-  |> Random.map (\i ->
-    (List.getAt i xs, List.take i xs ++ List.drop (i+1) xs))
-
--- Shuffle a list.
-shuffle : List a -> Generator (List a)
-shuffle xs =
-  pickOut xs
-  |> Random.andThen (\t ->
-    case t of
-      (Just x, rest) -> Random.map ((::) x) (shuffle rest)
-      _ -> Random.constant [])
 
 -- Generate `count` random stats.
 statsGenerator : Int -> Generator (List (String, Int))

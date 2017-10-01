@@ -11,7 +11,7 @@ import Speech
 
 import Compromise
 import Debug
-import Util
+import Util.Cmd exposing (addCmd, cmdThen)
 
 import Maybe.Extra as Maybe
 
@@ -38,16 +38,16 @@ update msg model = case msg of
     if String.isEmpty model.meal
       then model ! [] -- TODO give some sort of feedback?
       else Speech.train model
-        |> Util.cmdThen ChompAnimation.setup
+        |> cmdThen ChompAnimation.setup
   ChompTick diff -> ChompAnimation.tick diff model
   DizzyTick diff -> Petting.dizzyTick diff model ! []
   Pet ->
     if isHatched model
       then Petting.pet model
-        |> Util.cmdThen Speech.speak
+        |> cmdThen Speech.speak
       else model ! [Animation.trigger "rattle", SFX.play SFX.Rattle]
   Vocalize voicetype voice ->
-    maybeHatch { model | voice = voice } |> Util.addCmd (Speech.handleSpeech voicetype)
+    maybeHatch { model | voice = voice } |> addCmd (Speech.handleSpeech voicetype)
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
   SetCritter c ->

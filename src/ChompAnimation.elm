@@ -45,18 +45,25 @@ chomp oldState model =
           if String.isEmpty remaining
             then Model.Swallowing
             else Model.Chomping c
-  in
-    { model
-      | meal = remaining
-      , eating = newState |> Maybe.map (\ state ->
-        { timer = model.critter.chompDuration
-        , state = state })
-      , voice = if Maybe.isJust newState then "♫" else "" }
-    ! case newState of
+
+    newModel : Model
+    newModel =
+      { model
+        | meal = remaining
+        , eating = newState |> Maybe.map (\ state ->
+          { timer = model.critter.chompDuration
+          , state = state })
+        , voice = if Maybe.isJust newState then "♫" else "" }
+
+    commands : List (Cmd Msg)
+    commands =
+      case newState of
         Just _ -> -- still eating...
           [SFX.play SFX.Chomp]
         Nothing -> -- done!
           [finishEating model]
+  in
+    newModel ! commands
 
 -- Commands to run when we finish up eating.
 finishEating : Model -> Cmd Msg
