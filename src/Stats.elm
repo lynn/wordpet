@@ -1,5 +1,6 @@
 module Stats exposing (names)
 
+-- A list of stat names. (Thought of a funny one? Tell @chordbug on Twitter.)
 names : List String
 names =
   [ "Abstract Thinking"

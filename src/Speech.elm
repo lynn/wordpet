@@ -13,13 +13,13 @@ import Bad
 import Petting exposing (isOverwhelmed)
 
 
--- train the babble model
+-- Train the babble model on `model.meal`.
 trainBabbles : Model -> Model
 trainBabbles model =
   { model | babbles =
     Markov.addSample 1 identity (String.toList model.meal) model.babbles }
 
--- train the speech model
+-- Train the speech model on the given list of sentences.
 -- TODO: need to normalize
 trainSpeech : List String -> Model -> Model
 trainSpeech sentences model =
@@ -30,18 +30,18 @@ trainSpeech sentences model =
     { model
       | speech = List.foldl addSentence model.speech sentences }
 
--- train the appropriate model
+-- Train the appropriate model.
 train : Model -> (Model, Cmd Msg)
 train = babbleTick >> \ model ->
   if isEgg model then
-    -- not yet hatched! train the babble model
+    -- Not yet hatched! Train the babble model.
     trainBabbles model ! []
   else
-    -- hatched! train the speech model.
-    -- first we need to split the meal into sentences.
+    -- Hatched! Train the speech model.
+    -- First we need to split the meal into sentences.
     model ! [Compromise.sentences model.meal]
 
--- sample the appropriate model, usually speaking but sometimes babbling
+-- Sample the appropriate model, usually speaking but sometimes babbling.
 speak : Model -> (Model, Cmd Msg)
 speak = babbleTick >> \ model ->
   ( model
@@ -57,11 +57,11 @@ speak = babbleTick >> \ model ->
             else Random.constant <|
               Msg.Vocalize Msg.Speech (String.join " " voice))) )
 
--- for actions that can babble! decrease the babble timer
+-- Decrease the babble timer.
 babbleTick : Model -> Model
 babbleTick model = { model | babbleTimer = model.babbleTimer - 1 }
 
--- randomly babble sometimes
+-- Babble if the babble timer is zero. (Babbling resets this timer.)
 maybeBabble : Model -> Cmd Msg
 maybeBabble model = if model.babbleTimer == 0
   then babble model
@@ -97,14 +97,15 @@ babbleTextSatisfying : (String -> Bool) -> Model -> Random.Generator String
 babbleTextSatisfying predicate model =
   trySatisfy 100 predicate (babbleText model)
 
--- is this an ok name?
+-- Is this babble an adequate name? We check for ≥4 characters and no naughty cuss words.
+-- TODO: disallow names that equal a word the user taught the egg. (this is why `model` is passed here)
 namePredicate : Model -> String -> Bool
 namePredicate model babble =
   let name = String.dropRight 1 babble
   in String.length name >= 4 && not (List.member name Bad.words)
 
--- sample the babble model.
--- if we didn't hatch yet, try to make ok names
+-- Sample the babble model.
+-- As an egg, make a babble that works as a name; otherwise anything goes.
 babble : Model -> Cmd Msg
 babble model =
   model
@@ -113,22 +114,22 @@ babble model =
       else babbleTextSatisfying (namePredicate model))
   |> Random.generate (Msg.Vocalize Msg.Babble)
 
--- handle any additional work after speaking:
--- when we babble, reset the babble timer, so we don't babble too often
+-- Handle any additional work after speaking:
+-- When we babble, reset the babble timer, so we don't babble too often.
 handleSpeech : Msg.VoiceType -> Cmd Msg
 handleSpeech voiceType =
   case voiceType of
     Msg.Speech -> Cmd.none
     Msg.Babble -> Random.generate Msg.ResetBabbleTimer <| Random.int 2 9
 
--- normalize words for speech training and sampling
+-- Normalize words for speech training and sampling.
 normalizeWord : String -> String
 normalizeWord =
   let
-    -- be careful not to strip sentence terminators or we'll end up with
+    -- Be careful not to strip sentence terminators or we'll end up with
     -- periods and exclamation points and question marks in the middle of the
-    -- sentence! if we want to handle those, we'll need to do a bit more work,
-    -- but probably it's fine not to
+    -- sentence! If we want to handle those, we'll need to do a bit more work,
+    -- but probably it's fine not to.
     stripPunctuation =
       Regex.replace Regex.All (regex "[,~\"']") (always "")
   in

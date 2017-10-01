@@ -27,12 +27,17 @@ type DizzyState
   | Enduring { decay : Float }
   | Overwhelmed { decay : Float }
 
+-- How many words does the egg take to hatch?
+hatchTimer : Int
+hatchTimer = 6
+
+-- The initial value of our app model. The dummy critter is immediately overwritten.
 initial : Model
 initial =
   { critter = Critter.dummy
   , babbles = Dict.empty
   , speech  = Dict.empty
-  , babbleTimer = 6
+  , babbleTimer = hatchTimer
   , hatched = Nothing
   , meal = ""
   , eating = Nothing

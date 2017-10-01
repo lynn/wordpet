@@ -17,6 +17,8 @@ type alias Critter =
   , punctuation : String -- punctuation when babbling
   }
 
+-- The duration between chomps. (Right now, this doesn't ever vary, but maybe
+-- having some pets eat faster than others would be cute.)
 chompDuration : Time
 chompDuration = 280 * Time.millisecond
 
