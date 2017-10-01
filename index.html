@@ -79,4 +79,17 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
             critter.classList.remove(className);
         }, false);
     });
+
+    // Download.download
+    app.ports.download.subscribe(function(args) {
+        var filename = args[0], contents = args[1];
+        var element = document.createElement('a');
+        console.log('filename', filename, 'contents', contents);
+        element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(contents));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    });
 </script>
