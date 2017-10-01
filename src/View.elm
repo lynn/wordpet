@@ -19,6 +19,8 @@ import Model exposing (Model, isHatched, isEgg)
 import Msg exposing (..)
 import Petting
 
+import Json.Encode
+import Serialize
 
 {-| The type we use for identifiers for our styles.
 -}
@@ -252,4 +254,5 @@ view model =
         |> onLeft [ statBox model ]
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model
+      -- , text (Json.Encode.encode 0 <| Serialize.encodeModel model)
       ]
