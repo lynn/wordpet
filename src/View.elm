@@ -108,7 +108,7 @@ critterLayer palette part =
   in el None
     [ width (px 300)
     , height (px 240)
-    , class <| if isStatic then "static" else "wiggly"
+    , class (if isStatic then "static" else "wiggly")
     , inlineStyle
       [ ("background-image", imageUrl)
       , ("background-size", "100%")

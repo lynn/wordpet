@@ -94,7 +94,7 @@ generator =
     (Random.int 0 1)
     partsGenerator
     (statsGenerator 4)
-    (Random.map (Maybe.withDefault "☺") <| Random.sample ["!", "?", "~", "…"])
+    (Random.sample ["!", "?", "~", "…"] |> Random.map (Maybe.withDefault "☺"))
 
 -- Replace the first part in the list of parts that contains `old` by `new`.
 -- For example, to make a critter eat, try `change "eyes" "eat0" critter.parts`.

@@ -70,14 +70,13 @@ maybeBabble model = if model.babbleTimer == 0
 babbleText : Model -> Random.Generator String
 babbleText model =
   let
-    bab = Random.map String.fromList <| Markov.walk 1 identity model.babbles
-    randomRepeat i j s = Random.map (flip String.repeat s) <|
-      Random.int i j
+    bab = Random.map String.fromList (Markov.walk 1 identity model.babbles)
+    randomRepeat i j s = Random.int i j |> Random.map (\count -> String.repeat count s)
     punctuation =
       case model.dizziness of
         Model.Overwhelmed _ ->
           case model.critter.punctuation of
-            "…" -> Random.map ("…" |> (++)) <| randomRepeat 1 2 "!"
+            "…" -> Random.choices [Random.constant "…!", Random.constant "…!!"]
             p   -> randomRepeat 2 3 p
         _ -> Random.constant model.critter.punctuation
   in
@@ -120,7 +119,7 @@ handleSpeech : Msg.VoiceType -> Cmd Msg
 handleSpeech voiceType =
   case voiceType of
     Msg.Speech -> Cmd.none
-    Msg.Babble -> Random.generate Msg.ResetBabbleTimer <| Random.int 2 9
+    Msg.Babble -> Random.generate Msg.ResetBabbleTimer (Random.int 2 9)
 
 -- Normalize words for speech training and sampling.
 normalizeWord : String -> String
