@@ -1,10 +1,12 @@
-module Markov exposing (Model, addSample, walk, windows)
+module Markov exposing (Model, addSample, walk, encodeModel)
 
 import Dict exposing (Dict)
 import GenericDict as GDict exposing (GenericDict)
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Random.Pcg as Random exposing (Generator)
+
+import Json.Encode as E
 
 -- An "Ngram String" is just a list of Strings, for example.
 type alias Ngram a = List a
@@ -17,6 +19,28 @@ type alias Model word = Dict (Ngram word) (Tally (Maybe word))
 type alias Tally word =
   { wordTally : GenericDict word Int
   , total : Int }
+
+encodeDict : (comparable -> String) -> (v -> E.Value) -> Dict comparable v -> E.Value
+encodeDict showK encodeV dict =
+  Dict.toList dict
+  |> List.map (\(k,v) -> (showK k, encodeV v))
+  |> E.object
+
+encodeGDict : (k -> String) -> (v -> E.Value) -> GenericDict k v -> E.Value
+encodeGDict showK encodeV dict =
+  GDict.toList dict
+  |> List.map (\(k,v) -> (showK k, encodeV v))
+  |> E.object
+
+encodeModel : (comparable -> String) -> Model comparable -> E.Value
+encodeModel wordToString model =
+  let
+    maybeWordToString = Maybe.map wordToString >> Maybe.withDefault ""
+    ngramToString = List.map wordToString >> String.join " "
+    encodeWordTally = encodeGDict maybeWordToString E.int
+    encodeTally {wordTally, total} = E.list [E.int total, encodeWordTally wordTally]
+  in
+    encodeDict ngramToString encodeTally model
 
 -- An empty Tally value.
 blankTally : (word -> word -> Order) -> Tally word
