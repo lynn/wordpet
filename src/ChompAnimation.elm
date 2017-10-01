@@ -87,7 +87,7 @@ setup model =
     ! [scrollPlate]
 
 refocusPlate : Cmd Msg
-refocusPlate = Task.attempt (always Msg.Idle) <| Dom.focus "plate"
+refocusPlate = Task.attempt (always Msg.Idle) (Dom.focus "plate")
 
 scrollPlate : Cmd Msg
-scrollPlate = Task.attempt (always Msg.Idle) <| Dom.Scroll.toTop "plate"
+scrollPlate = Task.attempt (always Msg.Idle) (Dom.Scroll.toTop "plate")
