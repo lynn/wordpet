@@ -9,6 +9,7 @@
     "exposed-modules": [],
     "dependencies": {
         "bartavelle/json-helpers": "1.3.0 <= v < 2.0.0",
+        "elm-community/dict-extra": "2.2.0 <= v < 3.0.0",
         "elm-community/html-extra": "2.2.0 <= v < 3.0.0",
         "elm-community/list-extra": "6.1.0 <= v < 7.0.0",
         "elm-community/maybe-extra": "4.0.0 <= v < 5.0.0",

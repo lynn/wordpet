@@ -13,12 +13,12 @@ import Style.Color as Color
 import Style.Font as Font
 import String exposing (contains)
 
-import Json.Decode as Json
 import Critter exposing (Critter)
 import Model exposing (Model, isHatched, isEgg)
 import Msg exposing (..)
 import Petting
 
+import Json.Decode
 import Json.Encode
 import Serialize
 
@@ -188,8 +188,8 @@ renderCritter model =
 
 onEnter : msg -> Attribute v msg
 onEnter msg =
-  on "keydown" (keyCode |> Json.andThen (\code ->
-    if code == 13 then Json.succeed msg else Json.fail "not enter"))
+  on "keydown" (keyCode |> Json.Decode.andThen (\code ->
+    if code == 13 then Json.Decode.succeed msg else Json.Decode.fail "not enter"))
 
 
 inputArea : Model -> MyElement
@@ -254,5 +254,9 @@ view model =
         |> onLeft [ statBox model ]
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model
-      -- , text (Json.Encode.encode 0 <| Serialize.encodeModel model)
+      -- , paragraph None []
+      --   [ text (Serialize.encodeModel model |> Json.Encode.encode 0)
+      --   , text (Serialize.encodeModel model |> Json.Encode.encode 0 |> Json.Decode.decodeString Serialize.decodeModel |> toString)
+      --   , text (toString model)
+      --   ]
       ]

@@ -1,4 +1,4 @@
-module Markov exposing (Model, addSample, walk, encodeModel)
+module Markov exposing (Model, addSample, walk, decodeModel, encodeModel)
 
 import Dict exposing (Dict)
 import GenericDict as GDict exposing (GenericDict)
@@ -6,7 +6,10 @@ import List.Extra as List
 import Maybe.Extra as Maybe
 import Random.Pcg as Random exposing (Generator)
 
+import Dict.Extra as Dict
+import Json.Decode as D
 import Json.Encode as E
+import Util.String
 
 -- An "Ngram String" is just a list of Strings, for example.
 type alias Ngram a = List a
@@ -41,6 +44,23 @@ encodeModel wordToString model =
     encodeTally {wordTally, total} = E.list [E.int total, encodeWordTally wordTally]
   in
     encodeDict ngramToString encodeTally model
+
+decodeModel : (String -> comparable) -> D.Decoder (Model comparable)
+decodeModel stringToWord =
+  let
+    stringToNgram = Util.String.words >> List.map stringToWord
+    stringToMaybeWord s = case s of
+      "" -> Nothing
+      s -> Just (stringToWord s)
+    decodeWordTally =
+      D.dict D.int
+      |> D.map (Dict.toList >> List.map (\(k, v) -> (stringToMaybeWord k, v)) >> GDict.fromList compareMaybes)
+    decodeTally =
+      D.map2 (\a b -> {total = a, wordTally = b})
+        (D.index 0 D.int)
+        (D.index 1 decodeWordTally)
+  in
+    D.dict decodeTally |> D.map (Dict.mapKeys stringToNgram)
 
 -- An empty Tally value.
 blankTally : (word -> word -> Order) -> Tally word
