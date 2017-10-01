@@ -5,9 +5,13 @@ import Animation
 import AnimationFrame
 import ChompAnimation
 import Critter
+import Download
 import FoodProcessor
 import Petting
 import Speech
+
+import Json.Encode
+import Serialize
 
 import Compromise
 import Debug
@@ -56,6 +60,12 @@ update msg model = case msg of
     Speech.trainSpeech sentences model ! []
   ReceivedNormalize normalizedText ->
     Debug.log (toString normalizedText) model ! [] -- TODO (currently unused?)
+  DownloadModel ->
+    let
+      filename = Maybe.withDefault "wordpet" model.hatched ++ ".dna"
+      json = Serialize.encodeModel model |> Json.Encode.encode 0
+    in
+      model ! [Download.download (filename, json)]
 
 subscriptions : Model -> Sub Msg
 subscriptions model =

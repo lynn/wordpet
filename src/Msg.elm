@@ -12,6 +12,7 @@ type Msg
   | DizzyTick Time
   | ResetBabbleTimer Int
   | SetCritter Critter
+  | DownloadModel
   -- NLP ports
   | ReceivedSentences (List String)
   | ReceivedNormalize String

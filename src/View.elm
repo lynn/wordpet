@@ -245,6 +245,12 @@ statBox model =
     ]
     (column None [] (title :: statRows))
 
+exportButton : Model -> MyElement
+exportButton _ =
+  button None
+    [onClick DownloadModel]
+    (text "Export")
+
 view : Model -> Html Msg
 view model =
   Element.layout stylesheet <|
@@ -254,6 +260,7 @@ view model =
         |> onLeft [ statBox model ]
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model
+      , exportButton model
       -- , paragraph None []
       --   [ text (Serialize.encodeModel model |> Json.Encode.encode 0)
       --   , text (Serialize.encodeModel model |> Json.Encode.encode 0 |> Json.Decode.decodeString Serialize.decodeModel |> toString)
