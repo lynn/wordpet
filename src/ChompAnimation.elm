@@ -15,7 +15,8 @@ import Animation
 import SFX
 import Speech
 
--- called each frame of animation in the browser; chomp every `duration`
+-- Called each frame of animation in the browser.
+-- Counts down the chomp timer, chomping once it hits 0.
 tick : Time -> Model -> (Model, Cmd Msg)
 tick diff model =
   case model.eating of
@@ -55,11 +56,9 @@ chomp oldState model =
         Just _ -> -- still eating...
           [SFX.play SFX.Chomp]
         Nothing -> -- done!
-          [SFX.play (if isHatched model then SFX.Gulp else if model.babbleTimer == 0 then SFX.Hatch else SFX.Rattle)
-          , refocusPlate
-          , Speech.maybeBabble model]
+          [finishEating model]
 
--- commands to run when we finish up eating
+-- Commands to run when we finish up eating.
 finishEating : Model -> Cmd Msg
 finishEating model = Cmd.batch
   [ refocusPlate
@@ -74,7 +73,7 @@ finishEating model = Cmd.batch
         , Animation.trigger "rattle" ]
   ]
 
--- set up the chomp animation!
+-- Set up the chomp animation!
 setup : Model -> (Model, Cmd Msg)
 setup model =
   if isEgg model then

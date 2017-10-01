@@ -1,6 +1,9 @@
 module Bad exposing (words)
 import Char
 
+-- A list of really bad words, obscured for your viewing pleasure.
+-- We want to make sure the critters never babble slurs...
+-- (From here: https://www.npmjs.com/package/badwords-list)
 words : List String
 words =
   let unveil = String.map (\c -> Char.toCode c - 200 |> Char.fromCode)

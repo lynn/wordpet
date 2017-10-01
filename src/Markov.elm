@@ -1,4 +1,4 @@
-module Markov exposing (Model, addSample, walk)
+module Markov exposing (Model, addSample, walk, windows)
 
 import Dict exposing (Dict)
 import GenericDict as GDict exposing (GenericDict)
@@ -6,19 +6,19 @@ import List.Extra as List
 import Maybe.Extra as Maybe
 import Random.Pcg as Random exposing (Generator)
 
-
+-- An "Ngram String" is just a list of Strings, for example.
 type alias Ngram a = List a
 
--- model: given an n-gram of words, how frequently does each possible
--- next word (or end of sample) occur?
+-- Model: given an n-gram of words, how frequently does each possible
+-- next word (or end of sample; represented by Nothing) occur?
 type alias Model word = Dict (Ngram word) (Tally (Maybe word))
 
--- tally: store frequency distribution of words, for random sampling
+-- Tally: store frequency distribution of words, for random sampling.
 type alias Tally word =
   { wordTally : GenericDict word Int
   , total : Int }
 
-
+-- An empty Tally value.
 blankTally : (word -> word -> Order) -> Tally word
 blankTally comparison =
   { wordTally = GDict.empty comparison
@@ -27,20 +27,35 @@ blankTally comparison =
 withDefaultTally : (word -> word -> Order) -> Maybe (Tally word) -> Tally word
 withDefaultTally = Maybe.withDefault << blankTally
 
+-- A comparison function on Maybe values.
 compareMaybes : Maybe comparable -> Maybe comparable -> Order
 compareMaybes a b = compare (Maybe.toList a) (Maybe.toList b)
 
--- add a tally mark for a given word!
+-- Add a tally mark for a given word!
 markTally : word -> Tally word -> Tally word
 markTally word tally =
   let
-    addTally count = Just <| Maybe.withDefault 0 count + 1
+    -- Function to update an Int field with.
+    addTally : Maybe Int -> Maybe Int
+    addTally count = Just (Maybe.withDefault 0 count + 1)
   in
     { tally
       | wordTally = GDict.update word addTally tally.wordTally
       , total = tally.total + 1 }
 
--- slice up a sample into (n+1)-grams for tallying
+-- Slice up a sample into (n+1)-grams for tallying.
+-- The result is a list of pairs: (ngram, maybe next word).
+--
+--     windows 3 ["this", "is", "a", "tiny", "test"]
+--       ==
+--          [ ([],                       Just "this")
+--          , (["this"],                 Just "is")
+--          , (["this", "is"],           Just "a")
+--          , (["this", "is",   "a"],    Just "tiny")
+--          , (["is",   "a",    "tiny"], Just "test")
+--          , (["a",    "tiny", "test"], Nothing)
+--          ]
+
 windows : Int -> List word -> List (Ngram word, Maybe word)
 windows n words =
   let
@@ -54,15 +69,15 @@ windows n words =
   in
     initial ++ midsample
 
--- scan over a list of words and tally up word frequencies following each
--- n-gram, for a given n, adding them to the transition table
+-- Scan over a list of words and tally up word frequencies following each
+-- n-gram, for a given n, adding them to the transition table.
 addSample : Int -> (comparable -> comparable) -> List comparable
   -> Model comparable -> Model comparable
 addSample n normalize words model =
   let
     tally (ngram, next) =
       Dict.update ngram (Just << markTally next << withDefaultTally compareMaybes)
-    -- normalize the n-gram used as keys, leaving the tallied word untouched
+    -- Normalize the n-gram used as keys, leaving the tallied word untouched.
     entries = windows n normalPairs
       |> List.map
         (  Tuple.mapFirst (List.map Tuple.first)
@@ -72,7 +87,7 @@ addSample n normalize words model =
     List.foldl tally model entries
 
 
--- random word generator using the distribution given by a Tally
+-- Random word generator, using the distribution given by a Tally.
 pickWord : Tally word -> Generator (Maybe word)
 pickWord tally =
   let
@@ -89,7 +104,20 @@ pickWord tally =
   in
     Random.int 0 (tally.total - 1) |> Random.map (pickWith frequencies)
 
--- generate the next word and get the next state from a given state
+-- A step in our Markov text synthesis process. This function takes:
+--
+--   * our n-gram size `n`
+--   * our word normalization function
+--   * our Markov model
+--   * the last n-gram we generated
+--       (this is the only argument that changes in successive calls to `step`!)
+--
+-- Using the Tally stored in the model for the supplied n-gram as a probability function,
+-- it returns a Generator that decides what comes next: it randomly yields either
+--
+--   * Just (next word, new n-gram), signifying that generation will continue, or
+--   * Nothing, signifying the end of the generated text.
+--
 step : Int -> (comparable -> comparable) -> Model comparable -> Ngram comparable
   -> Generator (Maybe (comparable, Ngram comparable))
 step n normalize model ngram =
@@ -101,7 +129,7 @@ step n normalize model ngram =
     Just tally -> pickWord tally
       |> Random.map (Maybe.join >> Maybe.map slide)
 
--- generate a whole sentence!! wow!!
+-- Generate a whole sentence! This is just a wrapper around `step`.
 walk : Int -> (comparable -> comparable) -> Model comparable
   -> Generator (List comparable)
 walk n normalize model =

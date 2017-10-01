@@ -5,6 +5,7 @@ import Maybe.Extra as Maybe
 
 import Model exposing (Model)
 
+-- Process the meal (= input form). In egg form, we only allow lowercase letters and digits.
 process : Model -> Model
 process ({meal, hatched} as model) =
   if Maybe.isJust hatched then

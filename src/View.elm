@@ -40,11 +40,6 @@ type Variations
 
 type alias MyElement = Element Styles Variations Msg
 
-{-| First, we create a stylesheet.
-Styles only deal with properties that are not related to layout, position, or size.
-Generally all properties only have one allowed unit, which is usually px.
-If you want to use something like em
--}
 stylesheet : StyleSheet Styles Variations
 stylesheet =
   Style.styleSheet

@@ -55,7 +55,7 @@ update msg model = case msg of
   ReceivedSentences sentences ->
     Speech.trainSpeech sentences model ! []
   ReceivedNormalize normalizedText ->
-    Debug.log (toString normalizedText) model ! [] -- TODO
+    Debug.log (toString normalizedText) model ! [] -- TODO (currently unused?)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -64,18 +64,18 @@ subscriptions model =
   in Sub.batch
     -- Listen to chomp ticks so long as we're eating words.
     [ when (Maybe.isJust model.eating) (AnimationFrame.diffs ChompTick)
-    -- Listen to dizzy ticks if we're
+    -- Listen to dizzy ticks if we're dizzy.
     , when (model.dizziness /= Model.Calm) (AnimationFrame.diffs DizzyTick)
     -- Always listen to Compromise ports.
     , Compromise.receiveSentences ReceivedSentences
     , Compromise.receiveNormalize ReceivedNormalize ]
 
--- the first time we babble, hatch and set our name to our first word
+-- The first time we babble, hatch and set our name to our first word.
 maybeHatch : Model -> (Model, Cmd Msg)
 maybeHatch model =
   if isHatched model
     then model ! []
     else
-      -- `model.voice` will be punctuated, so strip that first
+      -- `model.voice` will be punctuated, so strip that first.
       let name = String.dropRight 1 model.voice
       in { model | hatched = Just name } ! [Animation.trigger "hatch"]
