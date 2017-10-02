@@ -261,6 +261,7 @@ view model =
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model
       , exportButton model
+      , button None [onClick StartUpload] (text "Import")
       -- , paragraph None []
       --   [ text (Serialize.encodeModel model |> Json.Encode.encode 0)
       --   , text (Serialize.encodeModel model |> Json.Encode.encode 0 |> Json.Decode.decodeString Serialize.decodeModel |> toString)

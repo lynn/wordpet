@@ -13,9 +13,11 @@ type Msg
   | ResetBabbleTimer Int
   | SetCritter Critter
   | DownloadModel
-  -- NLP ports
+  | StartUpload
+  -- ports
   | ReceivedSentences (List String)
   | ReceivedNormalize String
+  | ReceivedFileContents String
 
 type VoiceType
   = Babble

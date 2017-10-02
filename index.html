@@ -92,4 +92,31 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
         element.click();
         document.body.removeChild(element);
     });
+
+    app.ports.upload.subscribe(function() {
+        document.getElementById('import-critter').click();
+    })
+
+    // I stole this from here. https://stackoverflow.com/a/42583090/257418
+    function onFileLoad(elementId, event) {
+        app.ports.receiveContents.send(event.target.result);
+    }
+
+    function onChooseFile(event, onLoadFileHandler) {
+        if (typeof window.FileReader !== 'function')
+            throw ("The file API isn't supported on this browser.");
+        let input = event.target;
+        if (!input)
+            throw ("The browser does not properly implement the event object");
+        if (!input.files)
+            throw ("This browser does not support the `files` property of the file input.");
+        if (!input.files[0])
+            return undefined;
+        let file = input.files[0];
+        let fr = new FileReader();
+        fr.onload = onLoadFileHandler;
+        fr.readAsText(file);
+    }
+
 </script>
+<input id="import-critter" type="file" onchange='onChooseFile(event, onFileLoad.bind(this, "contents"))' style="display: none;" />

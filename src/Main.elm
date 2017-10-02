@@ -5,11 +5,12 @@ import Animation
 import AnimationFrame
 import ChompAnimation
 import Critter
-import Download
+import File
 import FoodProcessor
 import Petting
 import Speech
 
+import Json.Decode
 import Json.Encode
 import Serialize
 
@@ -56,16 +57,22 @@ update msg model = case msg of
     { model | babbleTimer = t } ! []
   SetCritter c ->
     { model | critter = c } ! []
-  ReceivedSentences sentences ->
-    Speech.trainSpeech sentences model ! []
-  ReceivedNormalize normalizedText ->
-    Debug.log (toString normalizedText) model ! [] -- TODO (currently unused?)
   DownloadModel ->
     let
       filename = Maybe.withDefault "wordpet" model.hatched ++ ".dna"
       json = Serialize.encodeModel model |> Json.Encode.encode 0
     in
-      model ! [Download.download (filename, json)]
+      model ! [File.download (filename, json)]
+  StartUpload ->
+    model ! [File.upload ()]
+  ReceivedSentences sentences ->
+    Speech.trainSpeech sentences model ! []
+  ReceivedNormalize normalizedText ->
+    Debug.log (toString normalizedText) model ! [] -- TODO (currently unused?)
+  ReceivedFileContents contents ->
+    case Json.Decode.decodeString Serialize.decodeModel contents of
+      Ok newModel -> newModel ! []
+      Err err -> Debug.log err model ! [] -- TODO don't fail silently!
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -78,7 +85,9 @@ subscriptions model =
     , when (model.dizziness /= Model.Calm) (AnimationFrame.diffs DizzyTick)
     -- Always listen to Compromise ports.
     , Compromise.receiveSentences ReceivedSentences
-    , Compromise.receiveNormalize ReceivedNormalize ]
+    , Compromise.receiveNormalize ReceivedNormalize
+    -- Always listen to file uploads (critter imports).
+    , File.receiveContents ReceivedFileContents ]
 
 -- The first time we babble, hatch and set our name to our first word.
 maybeHatch : Model -> (Model, Cmd Msg)
