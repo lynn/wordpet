@@ -14050,6 +14050,9 @@ var _lynn$wordpet$Model$Enduring = function (a) {
 var _lynn$wordpet$Model$Calm = {ctor: 'Calm'};
 var _lynn$wordpet$Model$initial = {critter: _lynn$wordpet$Critter$dummy, babbles: _elm_lang$core$Dict$empty, speech: _elm_lang$core$Dict$empty, babbleTimer: _lynn$wordpet$Model$hatchTimer, hatched: _elm_lang$core$Maybe$Nothing, meal: '', eating: _elm_lang$core$Maybe$Nothing, voice: '', dizziness: _lynn$wordpet$Model$Calm};
 
+var _lynn$wordpet$Msg$ReceivedLoadModel = function (a) {
+	return {ctor: 'ReceivedLoadModel', _0: a};
+};
 var _lynn$wordpet$Msg$ReceivedFileContents = function (a) {
 	return {ctor: 'ReceivedFileContents', _0: a};
 };
@@ -14604,6 +14607,18 @@ var _lynn$wordpet$FoodProcessor$process = function (_p1) {
 		});
 };
 
+var _lynn$wordpet$LocalStorage$saveModel = _elm_lang$core$Native_Platform.outgoingPort(
+	'saveModel',
+	function (v) {
+		return v;
+	});
+var _lynn$wordpet$LocalStorage$loadModel = _elm_lang$core$Native_Platform.outgoingPort(
+	'loadModel',
+	function (v) {
+		return null;
+	});
+var _lynn$wordpet$LocalStorage$receiveLoadModel = _elm_lang$core$Native_Platform.incomingPort('receiveLoadModel', _elm_lang$core$Json_Decode$string);
+
 var _lynn$wordpet$Serialize$decodeCritter = A7(
 	_elm_lang$core$Json_Decode$map6,
 	F6(
@@ -14635,13 +14650,13 @@ var _lynn$wordpet$Serialize$toChar = function (s) {
 };
 var _lynn$wordpet$Serialize$decodeModel = function () {
 	var initial = _lynn$wordpet$Model$initial;
-	return A5(
-		_elm_lang$core$Json_Decode$map4,
-		F4(
-			function (a, b, c, d) {
+	return A6(
+		_elm_lang$core$Json_Decode$map5,
+		F5(
+			function (a, b, c, d, e) {
 				return _elm_lang$core$Native_Utils.update(
 					initial,
-					{critter: a, babbles: b, speech: c, hatched: d});
+					{critter: a, babbles: b, speech: c, babbleTimer: d, hatched: e});
 			}),
 		A2(_elm_lang$core$Json_Decode$field, 'critter', _lynn$wordpet$Serialize$decodeCritter),
 		A2(
@@ -14652,6 +14667,7 @@ var _lynn$wordpet$Serialize$decodeModel = function () {
 			_elm_lang$core$Json_Decode$field,
 			'speech',
 			_lynn$wordpet$Markov$decodeModel(_elm_lang$core$Basics$identity)),
+		A2(_elm_lang$core$Json_Decode$field, 'babbleTimer', _elm_lang$core$Json_Decode$int),
 		A2(
 			_elm_lang$core$Json_Decode$field,
 			'hatched',
@@ -14759,14 +14775,28 @@ var _lynn$wordpet$Serialize$encodeModel = function (_p6) {
 						ctor: '::',
 						_0: {
 							ctor: '_Tuple2',
-							_0: 'hatched',
-							_1: A2(_lynn$wordpet$Serialize$maybeEncode, _elm_lang$core$Json_Encode$string, _p7.hatched)
+							_0: 'babbleTimer',
+							_1: _elm_lang$core$Json_Encode$int(_p7.babbleTimer)
 						},
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'hatched',
+								_1: A2(_lynn$wordpet$Serialize$maybeEncode, _elm_lang$core$Json_Encode$string, _p7.hatched)
+							},
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			}
 		});
+};
+var _lynn$wordpet$Serialize$modelToJson = function (_p8) {
+	return A2(
+		_elm_lang$core$Json_Encode$encode,
+		0,
+		_lynn$wordpet$Serialize$encodeModel(_p8));
 };
 
 var _lynn$wordpet$Util_Cmd$addCmd = F2(
@@ -28258,7 +28288,7 @@ var _lynn$wordpet$View$inputArea = function (model) {
 				return {
 					ctor: '::',
 					_0: A2(
-						_mdgriffith$stylish_elephants$Element$onRight,
+						_mdgriffith$stylish_elephants$Element$within,
 						{
 							ctor: '::',
 							_0: A3(
@@ -28270,7 +28300,11 @@ var _lynn$wordpet$View$inputArea = function (model) {
 									_1: {
 										ctor: '::',
 										_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$Feed),
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: _mdgriffith$stylish_elephants$Element_Attributes$alignRight,
+											_1: {ctor: '[]'}
+										}
 									}
 								},
 								_mdgriffith$stylish_elephants$Element$text('➤')),
@@ -28834,27 +28868,47 @@ var _lynn$wordpet$View$view = function (model) {
 												_0: _mdgriffith$stylish_elephants$Element_Attributes$padding(4),
 												_1: {
 													ctor: '::',
-													_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$DownloadModel),
+													_0: _mdgriffith$stylish_elephants$Element_Events$onClick(
+														_lynn$wordpet$Msg$ReceivedLoadModel('')),
 													_1: {ctor: '[]'}
 												}
 											},
-											_mdgriffith$stylish_elephants$Element$text('Export')),
+											_mdgriffith$stylish_elephants$Element$text('New Game')),
 										_1: {
 											ctor: '::',
-											_0: A3(
-												_mdgriffith$stylish_elephants$Element$button,
-												_lynn$wordpet$View$Button,
-												{
-													ctor: '::',
-													_0: _mdgriffith$stylish_elephants$Element_Attributes$padding(4),
-													_1: {
+											_0: A2(
+												_mdgriffith$stylish_elephants$Element$when,
+												_lynn$wordpet$Model$isHatched(model),
+												A3(
+													_mdgriffith$stylish_elephants$Element$button,
+													_lynn$wordpet$View$Button,
+													{
 														ctor: '::',
-														_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$StartUpload),
-														_1: {ctor: '[]'}
-													}
-												},
-												_mdgriffith$stylish_elephants$Element$text('Import')),
-											_1: {ctor: '[]'}
+														_0: _mdgriffith$stylish_elephants$Element_Attributes$padding(4),
+														_1: {
+															ctor: '::',
+															_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$DownloadModel),
+															_1: {ctor: '[]'}
+														}
+													},
+													_mdgriffith$stylish_elephants$Element$text('Export'))),
+											_1: {
+												ctor: '::',
+												_0: A3(
+													_mdgriffith$stylish_elephants$Element$button,
+													_lynn$wordpet$View$Button,
+													{
+														ctor: '::',
+														_0: _mdgriffith$stylish_elephants$Element_Attributes$padding(4),
+														_1: {
+															ctor: '::',
+															_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$StartUpload),
+															_1: {ctor: '[]'}
+														}
+													},
+													_mdgriffith$stylish_elephants$Element$text('Import')),
+												_1: {ctor: '[]'}
+											}
 										}
 									}),
 								_1: {ctor: '[]'}
@@ -28936,17 +28990,27 @@ var _lynn$wordpet$Main$maybeHatch = function (model) {
 	} else {
 		var name = A2(_elm_lang$core$String$dropRight, 1, model.voice);
 		return A2(
-			_elm_lang$core$Platform_Cmd_ops['!'],
-			_elm_lang$core$Native_Utils.update(
-				model,
+			_lynn$wordpet$Util_Cmd$cmdThen,
+			function (m) {
+				return {
+					ctor: '_Tuple2',
+					_0: m,
+					_1: _lynn$wordpet$LocalStorage$saveModel(
+						_lynn$wordpet$Serialize$modelToJson(m))
+				};
+			},
+			A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{
+						hatched: _elm_lang$core$Maybe$Just(name)
+					}),
 				{
-					hatched: _elm_lang$core$Maybe$Just(name)
-				}),
-			{
-				ctor: '::',
-				_0: _lynn$wordpet$Animation$trigger('hatch'),
-				_1: {ctor: '[]'}
-			});
+					ctor: '::',
+					_0: _lynn$wordpet$Animation$trigger('hatch'),
+					_1: {ctor: '[]'}
+				}));
 	}
 };
 var _lynn$wordpet$Main$subscriptions = function (model) {
@@ -28976,7 +29040,11 @@ var _lynn$wordpet$Main$subscriptions = function (model) {
 						_1: {
 							ctor: '::',
 							_0: _lynn$wordpet$File$receiveContents(_lynn$wordpet$Msg$ReceivedFileContents),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: _lynn$wordpet$LocalStorage$receiveLoadModel(_lynn$wordpet$Msg$ReceivedLoadModel),
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				}
@@ -29056,13 +29124,15 @@ var _lynn$wordpet$Main$update = F2(
 					{
 						ctor: '::',
 						_0: _lynn$wordpet$Main$prefetchCritterParts(newModel),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: _lynn$wordpet$LocalStorage$saveModel(
+								_lynn$wordpet$Serialize$modelToJson(newModel)),
+							_1: {ctor: '[]'}
+						}
 					});
 			case 'DownloadModel':
-				var json = A2(
-					_elm_lang$core$Json_Encode$encode,
-					0,
-					_lynn$wordpet$Serialize$encodeModel(model));
+				var json = _lynn$wordpet$Serialize$modelToJson(model);
 				var filename = A2(
 					_elm_lang$core$Basics_ops['++'],
 					A2(_elm_lang$core$Maybe$withDefault, 'wordpet', model.hatched),
@@ -29088,9 +29158,19 @@ var _lynn$wordpet$Main$update = F2(
 					});
 			case 'ReceivedSentences':
 				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					A2(_lynn$wordpet$Speech$trainSpeech, _p0._0, model),
-					{ctor: '[]'});
+					_lynn$wordpet$Util_Cmd$cmdThen,
+					function (m) {
+						return {
+							ctor: '_Tuple2',
+							_0: m,
+							_1: _lynn$wordpet$LocalStorage$saveModel(
+								_lynn$wordpet$Serialize$modelToJson(m))
+						};
+					},
+					A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						A2(_lynn$wordpet$Speech$trainSpeech, _p0._0, model),
+						{ctor: '[]'}));
 			case 'ReceivedNormalize':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
@@ -29099,7 +29179,7 @@ var _lynn$wordpet$Main$update = F2(
 						_elm_lang$core$Basics$toString(_p0._0),
 						model),
 					{ctor: '[]'});
-			default:
+			case 'ReceivedFileContents':
 				var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, _lynn$wordpet$Serialize$decodeModel, _p0._0);
 				if (_p1.ctor === 'Ok') {
 					var _p2 = _p1._0;
@@ -29121,6 +29201,40 @@ var _lynn$wordpet$Main$update = F2(
 							}),
 						{ctor: '[]'});
 				}
+			default:
+				var _p3 = _p0._0;
+				if (_p3 === '') {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_lynn$wordpet$Model$initial,
+						{
+							ctor: '::',
+							_0: A2(_mgold$elm_random_pcg$Random_Pcg$generate, _lynn$wordpet$Msg$SetCritter, _lynn$wordpet$Critter$generator),
+							_1: {ctor: '[]'}
+						});
+				} else {
+					var _p4 = A2(_elm_lang$core$Json_Decode$decodeString, _lynn$wordpet$Serialize$decodeModel, _p3);
+					if (_p4.ctor === 'Ok') {
+						var _p5 = _p4._0;
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_p5,
+							{
+								ctor: '::',
+								_0: _lynn$wordpet$Main$prefetchCritterParts(_p5),
+								_1: {ctor: '[]'}
+							});
+					} else {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_lynn$wordpet$Model$initial,
+							{
+								ctor: '::',
+								_0: A2(_mgold$elm_random_pcg$Random_Pcg$generate, _lynn$wordpet$Msg$SetCritter, _lynn$wordpet$Critter$generator),
+								_1: {ctor: '[]'}
+							});
+					}
+				}
 		}
 	});
 var _lynn$wordpet$Main$main = _elm_lang$html$Html$program(
@@ -29130,7 +29244,8 @@ var _lynn$wordpet$Main$main = _elm_lang$html$Html$program(
 			_lynn$wordpet$Model$initial,
 			{
 				ctor: '::',
-				_0: A2(_mgold$elm_random_pcg$Random_Pcg$generate, _lynn$wordpet$Msg$SetCritter, _lynn$wordpet$Critter$generator),
+				_0: _lynn$wordpet$LocalStorage$loadModel(
+					{ctor: '_Tuple0'}),
 				_1: {ctor: '[]'}
 			}),
 		view: _lynn$wordpet$View$view,
