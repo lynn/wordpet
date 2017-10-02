@@ -36,13 +36,17 @@ maybeEncode encoder m =
     Nothing -> E.null
 
 encodeModel : Model -> E.Value
-encodeModel {critter,babbles,speech,hatched} =
+encodeModel {critter,babbles,speech,babbleTimer,hatched} =
   E.object
     [ ("critter", encodeCritter critter)
     , ("babbles", Markov.encodeModel String.fromChar babbles)
     , ("speech", Markov.encodeModel identity speech)
+    , ("babbleTimer", E.int babbleTimer)
     , ("hatched", maybeEncode E.string hatched)
     ]
+
+modelToJson : Model -> String
+modelToJson = encodeModel >> E.encode 0
 
 encodeCritter : Critter -> E.Value
 encodeCritter {palette, parts, dizzy, chompDuration, stats, punctuation} =
@@ -64,10 +68,11 @@ toChar s =
 decodeModel : D.Decoder Model
 decodeModel =
   let initial = Model.initial in
-  D.map4 (\a b c d -> { initial | critter = a, babbles = b, speech = c, hatched = d })
+  D.map5 (\a b c d e -> { initial | critter = a, babbles = b, speech = c, babbleTimer = d, hatched = e })
     (D.field "critter" decodeCritter)
     (D.field "babbles" (Markov.decodeModel toChar))
     (D.field "speech" (Markov.decodeModel identity))
+    (D.field "babbleTimer" (D.int))
     (D.field "hatched" (D.nullable D.string))
 
 decodeCritter : D.Decoder Critter
