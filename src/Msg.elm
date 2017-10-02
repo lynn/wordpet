@@ -17,7 +17,8 @@ type Msg
   -- ports
   | ReceivedSentences (List String)
   | ReceivedNormalize String
-  | ReceivedFileContents String
+  | ReceivedFileContents String  -- json-encoded model
+  | ReceivedLoadModel String     -- json-encoded model (loaded game) or "" (new game)
 
 type VoiceType
   = Babble

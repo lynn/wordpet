@@ -73,6 +73,7 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
         if (!audioCache[path]) {
             audioCache[path] = new Audio(path);
         }
+        audioCache[path].volume = 0.25;
         audioCache[path].play();
     });
 
@@ -108,6 +109,19 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
         prefetchLink.rel = "prefetch";
         prefetchLink.as = "image";
         document.head.appendChild(prefetchLink);
+    });
+
+    // Save model to local storage.
+    app.ports.saveModel.subscribe(function(json) {
+        console.log('saveModel', json);
+        localStorage.setItem('model', json);
+    });
+
+    // Load model from local storage, if possible.
+    app.ports.loadModel.subscribe(function() {
+        var json = localStorage.getItem('model');
+        console.log('loadModel', json);
+        app.ports.receiveLoadModel.send(json || '');
     });
 
     // I stole this from here. https://stackoverflow.com/a/42583090/257418

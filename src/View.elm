@@ -265,7 +265,8 @@ view model =
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model
       , row None [spacing 10]
-        [ button Button [padding 4, onClick DownloadModel] (text "Export")
+        [ button Button [padding 4, onClick (ReceivedLoadModel "")] (text "New Game")
+        , button Button [padding 4, onClick DownloadModel] (text "Export")
         , button Button [padding 4, onClick StartUpload] (text "Import")
         ]
       -- , paragraph None []
