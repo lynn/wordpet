@@ -3240,6 +3240,1054 @@ var _Skinney$murmur3$Murmur3$hashString = F2(
 				str));
 	});
 
+var _elm_lang$core$Dict$foldr = F3(
+	function (f, acc, t) {
+		foldr:
+		while (true) {
+			var _p0 = t;
+			if (_p0.ctor === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var _v1 = f,
+					_v2 = A3(
+					f,
+					_p0._1,
+					_p0._2,
+					A3(_elm_lang$core$Dict$foldr, f, acc, _p0._4)),
+					_v3 = _p0._3;
+				f = _v1;
+				acc = _v2;
+				t = _v3;
+				continue foldr;
+			}
+		}
+	});
+var _elm_lang$core$Dict$keys = function (dict) {
+	return A3(
+		_elm_lang$core$Dict$foldr,
+		F3(
+			function (key, value, keyList) {
+				return {ctor: '::', _0: key, _1: keyList};
+			}),
+		{ctor: '[]'},
+		dict);
+};
+var _elm_lang$core$Dict$values = function (dict) {
+	return A3(
+		_elm_lang$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return {ctor: '::', _0: value, _1: valueList};
+			}),
+		{ctor: '[]'},
+		dict);
+};
+var _elm_lang$core$Dict$toList = function (dict) {
+	return A3(
+		_elm_lang$core$Dict$foldr,
+		F3(
+			function (key, value, list) {
+				return {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: key, _1: value},
+					_1: list
+				};
+			}),
+		{ctor: '[]'},
+		dict);
+};
+var _elm_lang$core$Dict$foldl = F3(
+	function (f, acc, dict) {
+		foldl:
+		while (true) {
+			var _p1 = dict;
+			if (_p1.ctor === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var _v5 = f,
+					_v6 = A3(
+					f,
+					_p1._1,
+					_p1._2,
+					A3(_elm_lang$core$Dict$foldl, f, acc, _p1._3)),
+					_v7 = _p1._4;
+				f = _v5;
+				acc = _v6;
+				dict = _v7;
+				continue foldl;
+			}
+		}
+	});
+var _elm_lang$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _p2) {
+				stepState:
+				while (true) {
+					var _p3 = _p2;
+					var _p9 = _p3._1;
+					var _p8 = _p3._0;
+					var _p4 = _p8;
+					if (_p4.ctor === '[]') {
+						return {
+							ctor: '_Tuple2',
+							_0: _p8,
+							_1: A3(rightStep, rKey, rValue, _p9)
+						};
+					} else {
+						var _p7 = _p4._1;
+						var _p6 = _p4._0._1;
+						var _p5 = _p4._0._0;
+						if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) < 0) {
+							var _v10 = rKey,
+								_v11 = rValue,
+								_v12 = {
+								ctor: '_Tuple2',
+								_0: _p7,
+								_1: A3(leftStep, _p5, _p6, _p9)
+							};
+							rKey = _v10;
+							rValue = _v11;
+							_p2 = _v12;
+							continue stepState;
+						} else {
+							if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) > 0) {
+								return {
+									ctor: '_Tuple2',
+									_0: _p8,
+									_1: A3(rightStep, rKey, rValue, _p9)
+								};
+							} else {
+								return {
+									ctor: '_Tuple2',
+									_0: _p7,
+									_1: A4(bothStep, _p5, _p6, rValue, _p9)
+								};
+							}
+						}
+					}
+				}
+			});
+		var _p10 = A3(
+			_elm_lang$core$Dict$foldl,
+			stepState,
+			{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Dict$toList(leftDict),
+				_1: initialResult
+			},
+			rightDict);
+		var leftovers = _p10._0;
+		var intermediateResult = _p10._1;
+		return A3(
+			_elm_lang$core$List$foldl,
+			F2(
+				function (_p11, result) {
+					var _p12 = _p11;
+					return A3(leftStep, _p12._0, _p12._1, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var _elm_lang$core$Dict$reportRemBug = F4(
+	function (msg, c, lgot, rgot) {
+		return _elm_lang$core$Native_Debug.crash(
+			_elm_lang$core$String$concat(
+				{
+					ctor: '::',
+					_0: 'Internal red-black tree invariant violated, expected ',
+					_1: {
+						ctor: '::',
+						_0: msg,
+						_1: {
+							ctor: '::',
+							_0: ' and got ',
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$core$Basics$toString(c),
+								_1: {
+									ctor: '::',
+									_0: '/',
+									_1: {
+										ctor: '::',
+										_0: lgot,
+										_1: {
+											ctor: '::',
+											_0: '/',
+											_1: {
+												ctor: '::',
+												_0: rgot,
+												_1: {
+													ctor: '::',
+													_0: '\nPlease report this bug to <https://github.com/elm-lang/core/issues>',
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}));
+	});
+var _elm_lang$core$Dict$isBBlack = function (dict) {
+	var _p13 = dict;
+	_v14_2:
+	do {
+		if (_p13.ctor === 'RBNode_elm_builtin') {
+			if (_p13._0.ctor === 'BBlack') {
+				return true;
+			} else {
+				break _v14_2;
+			}
+		} else {
+			if (_p13._0.ctor === 'LBBlack') {
+				return true;
+			} else {
+				break _v14_2;
+			}
+		}
+	} while(false);
+	return false;
+};
+var _elm_lang$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			var _p14 = dict;
+			if (_p14.ctor === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var _v16 = A2(_elm_lang$core$Dict$sizeHelp, n + 1, _p14._4),
+					_v17 = _p14._3;
+				n = _v16;
+				dict = _v17;
+				continue sizeHelp;
+			}
+		}
+	});
+var _elm_lang$core$Dict$size = function (dict) {
+	return A2(_elm_lang$core$Dict$sizeHelp, 0, dict);
+};
+var _elm_lang$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			var _p15 = dict;
+			if (_p15.ctor === 'RBEmpty_elm_builtin') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p16 = A2(_elm_lang$core$Basics$compare, targetKey, _p15._1);
+				switch (_p16.ctor) {
+					case 'LT':
+						var _v20 = targetKey,
+							_v21 = _p15._3;
+						targetKey = _v20;
+						dict = _v21;
+						continue get;
+					case 'EQ':
+						return _elm_lang$core$Maybe$Just(_p15._2);
+					default:
+						var _v22 = targetKey,
+							_v23 = _p15._4;
+						targetKey = _v22;
+						dict = _v23;
+						continue get;
+				}
+			}
+		}
+	});
+var _elm_lang$core$Dict$member = F2(
+	function (key, dict) {
+		var _p17 = A2(_elm_lang$core$Dict$get, key, dict);
+		if (_p17.ctor === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var _elm_lang$core$Dict$maxWithDefault = F3(
+	function (k, v, r) {
+		maxWithDefault:
+		while (true) {
+			var _p18 = r;
+			if (_p18.ctor === 'RBEmpty_elm_builtin') {
+				return {ctor: '_Tuple2', _0: k, _1: v};
+			} else {
+				var _v26 = _p18._1,
+					_v27 = _p18._2,
+					_v28 = _p18._4;
+				k = _v26;
+				v = _v27;
+				r = _v28;
+				continue maxWithDefault;
+			}
+		}
+	});
+var _elm_lang$core$Dict$NBlack = {ctor: 'NBlack'};
+var _elm_lang$core$Dict$BBlack = {ctor: 'BBlack'};
+var _elm_lang$core$Dict$Black = {ctor: 'Black'};
+var _elm_lang$core$Dict$blackish = function (t) {
+	var _p19 = t;
+	if (_p19.ctor === 'RBNode_elm_builtin') {
+		var _p20 = _p19._0;
+		return _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$Black) || _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$BBlack);
+	} else {
+		return true;
+	}
+};
+var _elm_lang$core$Dict$Red = {ctor: 'Red'};
+var _elm_lang$core$Dict$moreBlack = function (color) {
+	var _p21 = color;
+	switch (_p21.ctor) {
+		case 'Black':
+			return _elm_lang$core$Dict$BBlack;
+		case 'Red':
+			return _elm_lang$core$Dict$Black;
+		case 'NBlack':
+			return _elm_lang$core$Dict$Red;
+		default:
+			return _elm_lang$core$Native_Debug.crash('Can\'t make a double black node more black!');
+	}
+};
+var _elm_lang$core$Dict$lessBlack = function (color) {
+	var _p22 = color;
+	switch (_p22.ctor) {
+		case 'BBlack':
+			return _elm_lang$core$Dict$Black;
+		case 'Black':
+			return _elm_lang$core$Dict$Red;
+		case 'Red':
+			return _elm_lang$core$Dict$NBlack;
+		default:
+			return _elm_lang$core$Native_Debug.crash('Can\'t make a negative black node less black!');
+	}
+};
+var _elm_lang$core$Dict$LBBlack = {ctor: 'LBBlack'};
+var _elm_lang$core$Dict$LBlack = {ctor: 'LBlack'};
+var _elm_lang$core$Dict$RBEmpty_elm_builtin = function (a) {
+	return {ctor: 'RBEmpty_elm_builtin', _0: a};
+};
+var _elm_lang$core$Dict$empty = _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+var _elm_lang$core$Dict$isEmpty = function (dict) {
+	return _elm_lang$core$Native_Utils.eq(dict, _elm_lang$core$Dict$empty);
+};
+var _elm_lang$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {ctor: 'RBNode_elm_builtin', _0: a, _1: b, _2: c, _3: d, _4: e};
+	});
+var _elm_lang$core$Dict$ensureBlackRoot = function (dict) {
+	var _p23 = dict;
+	if ((_p23.ctor === 'RBNode_elm_builtin') && (_p23._0.ctor === 'Red')) {
+		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p23._1, _p23._2, _p23._3, _p23._4);
+	} else {
+		return dict;
+	}
+};
+var _elm_lang$core$Dict$lessBlackTree = function (dict) {
+	var _p24 = dict;
+	if (_p24.ctor === 'RBNode_elm_builtin') {
+		return A5(
+			_elm_lang$core$Dict$RBNode_elm_builtin,
+			_elm_lang$core$Dict$lessBlack(_p24._0),
+			_p24._1,
+			_p24._2,
+			_p24._3,
+			_p24._4);
+	} else {
+		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+	}
+};
+var _elm_lang$core$Dict$balancedTree = function (col) {
+	return function (xk) {
+		return function (xv) {
+			return function (yk) {
+				return function (yv) {
+					return function (zk) {
+						return function (zv) {
+							return function (a) {
+								return function (b) {
+									return function (c) {
+										return function (d) {
+											return A5(
+												_elm_lang$core$Dict$RBNode_elm_builtin,
+												_elm_lang$core$Dict$lessBlack(col),
+												yk,
+												yv,
+												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, xk, xv, a, b),
+												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, zk, zv, c, d));
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _elm_lang$core$Dict$blacken = function (t) {
+	var _p25 = t;
+	if (_p25.ctor === 'RBEmpty_elm_builtin') {
+		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+	} else {
+		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p25._1, _p25._2, _p25._3, _p25._4);
+	}
+};
+var _elm_lang$core$Dict$redden = function (t) {
+	var _p26 = t;
+	if (_p26.ctor === 'RBEmpty_elm_builtin') {
+		return _elm_lang$core$Native_Debug.crash('can\'t make a Leaf red');
+	} else {
+		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, _p26._1, _p26._2, _p26._3, _p26._4);
+	}
+};
+var _elm_lang$core$Dict$balanceHelp = function (tree) {
+	var _p27 = tree;
+	_v36_6:
+	do {
+		_v36_5:
+		do {
+			_v36_4:
+			do {
+				_v36_3:
+				do {
+					_v36_2:
+					do {
+						_v36_1:
+						do {
+							_v36_0:
+							do {
+								if (_p27.ctor === 'RBNode_elm_builtin') {
+									if (_p27._3.ctor === 'RBNode_elm_builtin') {
+										if (_p27._4.ctor === 'RBNode_elm_builtin') {
+											switch (_p27._3._0.ctor) {
+												case 'Red':
+													switch (_p27._4._0.ctor) {
+														case 'Red':
+															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+																break _v36_0;
+															} else {
+																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+																	break _v36_1;
+																} else {
+																	if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+																		break _v36_2;
+																	} else {
+																		if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+																			break _v36_3;
+																		} else {
+																			break _v36_6;
+																		}
+																	}
+																}
+															}
+														case 'NBlack':
+															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+																break _v36_0;
+															} else {
+																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+																	break _v36_1;
+																} else {
+																	if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+																		break _v36_4;
+																	} else {
+																		break _v36_6;
+																	}
+																}
+															}
+														default:
+															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+																break _v36_0;
+															} else {
+																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+																	break _v36_1;
+																} else {
+																	break _v36_6;
+																}
+															}
+													}
+												case 'NBlack':
+													switch (_p27._4._0.ctor) {
+														case 'Red':
+															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+																break _v36_2;
+															} else {
+																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+																	break _v36_3;
+																} else {
+																	if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+																		break _v36_5;
+																	} else {
+																		break _v36_6;
+																	}
+																}
+															}
+														case 'NBlack':
+															if (_p27._0.ctor === 'BBlack') {
+																if ((((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+																	break _v36_4;
+																} else {
+																	if ((((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+																		break _v36_5;
+																	} else {
+																		break _v36_6;
+																	}
+																}
+															} else {
+																break _v36_6;
+															}
+														default:
+															if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+																break _v36_5;
+															} else {
+																break _v36_6;
+															}
+													}
+												default:
+													switch (_p27._4._0.ctor) {
+														case 'Red':
+															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+																break _v36_2;
+															} else {
+																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+																	break _v36_3;
+																} else {
+																	break _v36_6;
+																}
+															}
+														case 'NBlack':
+															if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+																break _v36_4;
+															} else {
+																break _v36_6;
+															}
+														default:
+															break _v36_6;
+													}
+											}
+										} else {
+											switch (_p27._3._0.ctor) {
+												case 'Red':
+													if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
+														break _v36_0;
+													} else {
+														if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
+															break _v36_1;
+														} else {
+															break _v36_6;
+														}
+													}
+												case 'NBlack':
+													if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
+														break _v36_5;
+													} else {
+														break _v36_6;
+													}
+												default:
+													break _v36_6;
+											}
+										}
+									} else {
+										if (_p27._4.ctor === 'RBNode_elm_builtin') {
+											switch (_p27._4._0.ctor) {
+												case 'Red':
+													if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
+														break _v36_2;
+													} else {
+														if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
+															break _v36_3;
+														} else {
+															break _v36_6;
+														}
+													}
+												case 'NBlack':
+													if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
+														break _v36_4;
+													} else {
+														break _v36_6;
+													}
+												default:
+													break _v36_6;
+											}
+										} else {
+											break _v36_6;
+										}
+									}
+								} else {
+									break _v36_6;
+								}
+							} while(false);
+							return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._3._1)(_p27._3._3._2)(_p27._3._1)(_p27._3._2)(_p27._1)(_p27._2)(_p27._3._3._3)(_p27._3._3._4)(_p27._3._4)(_p27._4);
+						} while(false);
+						return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._1)(_p27._3._2)(_p27._3._4._1)(_p27._3._4._2)(_p27._1)(_p27._2)(_p27._3._3)(_p27._3._4._3)(_p27._3._4._4)(_p27._4);
+					} while(false);
+					return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._3._1)(_p27._4._3._2)(_p27._4._1)(_p27._4._2)(_p27._3)(_p27._4._3._3)(_p27._4._3._4)(_p27._4._4);
+				} while(false);
+				return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._1)(_p27._4._2)(_p27._4._4._1)(_p27._4._4._2)(_p27._3)(_p27._4._3)(_p27._4._4._3)(_p27._4._4._4);
+			} while(false);
+			return A5(
+				_elm_lang$core$Dict$RBNode_elm_builtin,
+				_elm_lang$core$Dict$Black,
+				_p27._4._3._1,
+				_p27._4._3._2,
+				A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3, _p27._4._3._3),
+				A5(
+					_elm_lang$core$Dict$balance,
+					_elm_lang$core$Dict$Black,
+					_p27._4._1,
+					_p27._4._2,
+					_p27._4._3._4,
+					_elm_lang$core$Dict$redden(_p27._4._4)));
+		} while(false);
+		return A5(
+			_elm_lang$core$Dict$RBNode_elm_builtin,
+			_elm_lang$core$Dict$Black,
+			_p27._3._4._1,
+			_p27._3._4._2,
+			A5(
+				_elm_lang$core$Dict$balance,
+				_elm_lang$core$Dict$Black,
+				_p27._3._1,
+				_p27._3._2,
+				_elm_lang$core$Dict$redden(_p27._3._3),
+				_p27._3._4._3),
+			A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3._4._4, _p27._4));
+	} while(false);
+	return tree;
+};
+var _elm_lang$core$Dict$balance = F5(
+	function (c, k, v, l, r) {
+		var tree = A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
+		return _elm_lang$core$Dict$blackish(tree) ? _elm_lang$core$Dict$balanceHelp(tree) : tree;
+	});
+var _elm_lang$core$Dict$bubble = F5(
+	function (c, k, v, l, r) {
+		return (_elm_lang$core$Dict$isBBlack(l) || _elm_lang$core$Dict$isBBlack(r)) ? A5(
+			_elm_lang$core$Dict$balance,
+			_elm_lang$core$Dict$moreBlack(c),
+			k,
+			v,
+			_elm_lang$core$Dict$lessBlackTree(l),
+			_elm_lang$core$Dict$lessBlackTree(r)) : A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
+	});
+var _elm_lang$core$Dict$removeMax = F5(
+	function (c, k, v, l, r) {
+		var _p28 = r;
+		if (_p28.ctor === 'RBEmpty_elm_builtin') {
+			return A3(_elm_lang$core$Dict$rem, c, l, r);
+		} else {
+			return A5(
+				_elm_lang$core$Dict$bubble,
+				c,
+				k,
+				v,
+				l,
+				A5(_elm_lang$core$Dict$removeMax, _p28._0, _p28._1, _p28._2, _p28._3, _p28._4));
+		}
+	});
+var _elm_lang$core$Dict$rem = F3(
+	function (color, left, right) {
+		var _p29 = {ctor: '_Tuple2', _0: left, _1: right};
+		if (_p29._0.ctor === 'RBEmpty_elm_builtin') {
+			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
+				var _p30 = color;
+				switch (_p30.ctor) {
+					case 'Red':
+						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+					case 'Black':
+						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBBlack);
+					default:
+						return _elm_lang$core$Native_Debug.crash('cannot have bblack or nblack nodes at this point');
+				}
+			} else {
+				var _p33 = _p29._1._0;
+				var _p32 = _p29._0._0;
+				var _p31 = {ctor: '_Tuple3', _0: color, _1: _p32, _2: _p33};
+				if ((((_p31.ctor === '_Tuple3') && (_p31._0.ctor === 'Black')) && (_p31._1.ctor === 'LBlack')) && (_p31._2.ctor === 'Red')) {
+					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._1._1, _p29._1._2, _p29._1._3, _p29._1._4);
+				} else {
+					return A4(
+						_elm_lang$core$Dict$reportRemBug,
+						'Black/LBlack/Red',
+						color,
+						_elm_lang$core$Basics$toString(_p32),
+						_elm_lang$core$Basics$toString(_p33));
+				}
+			}
+		} else {
+			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
+				var _p36 = _p29._1._0;
+				var _p35 = _p29._0._0;
+				var _p34 = {ctor: '_Tuple3', _0: color, _1: _p35, _2: _p36};
+				if ((((_p34.ctor === '_Tuple3') && (_p34._0.ctor === 'Black')) && (_p34._1.ctor === 'Red')) && (_p34._2.ctor === 'LBlack')) {
+					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._0._1, _p29._0._2, _p29._0._3, _p29._0._4);
+				} else {
+					return A4(
+						_elm_lang$core$Dict$reportRemBug,
+						'Black/Red/LBlack',
+						color,
+						_elm_lang$core$Basics$toString(_p35),
+						_elm_lang$core$Basics$toString(_p36));
+				}
+			} else {
+				var _p40 = _p29._0._2;
+				var _p39 = _p29._0._4;
+				var _p38 = _p29._0._1;
+				var newLeft = A5(_elm_lang$core$Dict$removeMax, _p29._0._0, _p38, _p40, _p29._0._3, _p39);
+				var _p37 = A3(_elm_lang$core$Dict$maxWithDefault, _p38, _p40, _p39);
+				var k = _p37._0;
+				var v = _p37._1;
+				return A5(_elm_lang$core$Dict$bubble, color, k, v, newLeft, right);
+			}
+		}
+	});
+var _elm_lang$core$Dict$map = F2(
+	function (f, dict) {
+		var _p41 = dict;
+		if (_p41.ctor === 'RBEmpty_elm_builtin') {
+			return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
+		} else {
+			var _p42 = _p41._1;
+			return A5(
+				_elm_lang$core$Dict$RBNode_elm_builtin,
+				_p41._0,
+				_p42,
+				A2(f, _p42, _p41._2),
+				A2(_elm_lang$core$Dict$map, f, _p41._3),
+				A2(_elm_lang$core$Dict$map, f, _p41._4));
+		}
+	});
+var _elm_lang$core$Dict$Same = {ctor: 'Same'};
+var _elm_lang$core$Dict$Remove = {ctor: 'Remove'};
+var _elm_lang$core$Dict$Insert = {ctor: 'Insert'};
+var _elm_lang$core$Dict$update = F3(
+	function (k, alter, dict) {
+		var up = function (dict) {
+			var _p43 = dict;
+			if (_p43.ctor === 'RBEmpty_elm_builtin') {
+				var _p44 = alter(_elm_lang$core$Maybe$Nothing);
+				if (_p44.ctor === 'Nothing') {
+					return {ctor: '_Tuple2', _0: _elm_lang$core$Dict$Same, _1: _elm_lang$core$Dict$empty};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Dict$Insert,
+						_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, k, _p44._0, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty)
+					};
+				}
+			} else {
+				var _p55 = _p43._2;
+				var _p54 = _p43._4;
+				var _p53 = _p43._3;
+				var _p52 = _p43._1;
+				var _p51 = _p43._0;
+				var _p45 = A2(_elm_lang$core$Basics$compare, k, _p52);
+				switch (_p45.ctor) {
+					case 'EQ':
+						var _p46 = alter(
+							_elm_lang$core$Maybe$Just(_p55));
+						if (_p46.ctor === 'Nothing') {
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Dict$Remove,
+								_1: A3(_elm_lang$core$Dict$rem, _p51, _p53, _p54)
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Dict$Same,
+								_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p46._0, _p53, _p54)
+							};
+						}
+					case 'LT':
+						var _p47 = up(_p53);
+						var flag = _p47._0;
+						var newLeft = _p47._1;
+						var _p48 = flag;
+						switch (_p48.ctor) {
+							case 'Same':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Same,
+									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, newLeft, _p54)
+								};
+							case 'Insert':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Insert,
+									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, newLeft, _p54)
+								};
+							default:
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Remove,
+									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, newLeft, _p54)
+								};
+						}
+					default:
+						var _p49 = up(_p54);
+						var flag = _p49._0;
+						var newRight = _p49._1;
+						var _p50 = flag;
+						switch (_p50.ctor) {
+							case 'Same':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Same,
+									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, _p53, newRight)
+								};
+							case 'Insert':
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Insert,
+									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, _p53, newRight)
+								};
+							default:
+								return {
+									ctor: '_Tuple2',
+									_0: _elm_lang$core$Dict$Remove,
+									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, _p53, newRight)
+								};
+						}
+				}
+			}
+		};
+		var _p56 = up(dict);
+		var flag = _p56._0;
+		var updatedDict = _p56._1;
+		var _p57 = flag;
+		switch (_p57.ctor) {
+			case 'Same':
+				return updatedDict;
+			case 'Insert':
+				return _elm_lang$core$Dict$ensureBlackRoot(updatedDict);
+			default:
+				return _elm_lang$core$Dict$blacken(updatedDict);
+		}
+	});
+var _elm_lang$core$Dict$insert = F3(
+	function (key, value, dict) {
+		return A3(
+			_elm_lang$core$Dict$update,
+			key,
+			_elm_lang$core$Basics$always(
+				_elm_lang$core$Maybe$Just(value)),
+			dict);
+	});
+var _elm_lang$core$Dict$singleton = F2(
+	function (key, value) {
+		return A3(_elm_lang$core$Dict$insert, key, value, _elm_lang$core$Dict$empty);
+	});
+var _elm_lang$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3(_elm_lang$core$Dict$foldl, _elm_lang$core$Dict$insert, t2, t1);
+	});
+var _elm_lang$core$Dict$filter = F2(
+	function (predicate, dictionary) {
+		var add = F3(
+			function (key, value, dict) {
+				return A2(predicate, key, value) ? A3(_elm_lang$core$Dict$insert, key, value, dict) : dict;
+			});
+		return A3(_elm_lang$core$Dict$foldl, add, _elm_lang$core$Dict$empty, dictionary);
+	});
+var _elm_lang$core$Dict$intersect = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Dict$filter,
+			F2(
+				function (k, _p58) {
+					return A2(_elm_lang$core$Dict$member, k, t2);
+				}),
+			t1);
+	});
+var _elm_lang$core$Dict$partition = F2(
+	function (predicate, dict) {
+		var add = F3(
+			function (key, value, _p59) {
+				var _p60 = _p59;
+				var _p62 = _p60._1;
+				var _p61 = _p60._0;
+				return A2(predicate, key, value) ? {
+					ctor: '_Tuple2',
+					_0: A3(_elm_lang$core$Dict$insert, key, value, _p61),
+					_1: _p62
+				} : {
+					ctor: '_Tuple2',
+					_0: _p61,
+					_1: A3(_elm_lang$core$Dict$insert, key, value, _p62)
+				};
+			});
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			add,
+			{ctor: '_Tuple2', _0: _elm_lang$core$Dict$empty, _1: _elm_lang$core$Dict$empty},
+			dict);
+	});
+var _elm_lang$core$Dict$fromList = function (assocs) {
+	return A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (_p63, dict) {
+				var _p64 = _p63;
+				return A3(_elm_lang$core$Dict$insert, _p64._0, _p64._1, dict);
+			}),
+		_elm_lang$core$Dict$empty,
+		assocs);
+};
+var _elm_lang$core$Dict$remove = F2(
+	function (key, dict) {
+		return A3(
+			_elm_lang$core$Dict$update,
+			key,
+			_elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
+			dict);
+	});
+var _elm_lang$core$Dict$diff = F2(
+	function (t1, t2) {
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, v, t) {
+					return A2(_elm_lang$core$Dict$remove, k, t);
+				}),
+			t1,
+			t2);
+	});
+
+var _elm_lang$core$Set$foldr = F3(
+	function (f, b, _p0) {
+		var _p1 = _p0;
+		return A3(
+			_elm_lang$core$Dict$foldr,
+			F3(
+				function (k, _p2, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p1._0);
+	});
+var _elm_lang$core$Set$foldl = F3(
+	function (f, b, _p3) {
+		var _p4 = _p3;
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, _p5, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p4._0);
+	});
+var _elm_lang$core$Set$toList = function (_p6) {
+	var _p7 = _p6;
+	return _elm_lang$core$Dict$keys(_p7._0);
+};
+var _elm_lang$core$Set$size = function (_p8) {
+	var _p9 = _p8;
+	return _elm_lang$core$Dict$size(_p9._0);
+};
+var _elm_lang$core$Set$member = F2(
+	function (k, _p10) {
+		var _p11 = _p10;
+		return A2(_elm_lang$core$Dict$member, k, _p11._0);
+	});
+var _elm_lang$core$Set$isEmpty = function (_p12) {
+	var _p13 = _p12;
+	return _elm_lang$core$Dict$isEmpty(_p13._0);
+};
+var _elm_lang$core$Set$Set_elm_builtin = function (a) {
+	return {ctor: 'Set_elm_builtin', _0: a};
+};
+var _elm_lang$core$Set$empty = _elm_lang$core$Set$Set_elm_builtin(_elm_lang$core$Dict$empty);
+var _elm_lang$core$Set$singleton = function (k) {
+	return _elm_lang$core$Set$Set_elm_builtin(
+		A2(
+			_elm_lang$core$Dict$singleton,
+			k,
+			{ctor: '_Tuple0'}));
+};
+var _elm_lang$core$Set$insert = F2(
+	function (k, _p14) {
+		var _p15 = _p14;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A3(
+				_elm_lang$core$Dict$insert,
+				k,
+				{ctor: '_Tuple0'},
+				_p15._0));
+	});
+var _elm_lang$core$Set$fromList = function (xs) {
+	return A3(_elm_lang$core$List$foldl, _elm_lang$core$Set$insert, _elm_lang$core$Set$empty, xs);
+};
+var _elm_lang$core$Set$map = F2(
+	function (f, s) {
+		return _elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				f,
+				_elm_lang$core$Set$toList(s)));
+	});
+var _elm_lang$core$Set$remove = F2(
+	function (k, _p16) {
+		var _p17 = _p16;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$remove, k, _p17._0));
+	});
+var _elm_lang$core$Set$union = F2(
+	function (_p19, _p18) {
+		var _p20 = _p19;
+		var _p21 = _p18;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$union, _p20._0, _p21._0));
+	});
+var _elm_lang$core$Set$intersect = F2(
+	function (_p23, _p22) {
+		var _p24 = _p23;
+		var _p25 = _p22;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$intersect, _p24._0, _p25._0));
+	});
+var _elm_lang$core$Set$diff = F2(
+	function (_p27, _p26) {
+		var _p28 = _p27;
+		var _p29 = _p26;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$diff, _p28._0, _p29._0));
+	});
+var _elm_lang$core$Set$filter = F2(
+	function (p, _p30) {
+		var _p31 = _p30;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(
+				_elm_lang$core$Dict$filter,
+				F2(
+					function (k, _p32) {
+						return p(k);
+					}),
+				_p31._0));
+	});
+var _elm_lang$core$Set$partition = F2(
+	function (p, _p33) {
+		var _p34 = _p33;
+		var _p35 = A2(
+			_elm_lang$core$Dict$partition,
+			F2(
+				function (k, _p36) {
+					return p(k);
+				}),
+			_p34._0);
+		var p1 = _p35._0;
+		var p2 = _p35._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Set$Set_elm_builtin(p1),
+			_1: _elm_lang$core$Set$Set_elm_builtin(p2)
+		};
+	});
+
 //import Native.List //
 
 var _elm_lang$core$Native_Array = function() {
@@ -4262,923 +5310,6 @@ var _elm_lang$core$Array$repeat = F2(
 	});
 var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
-var _elm_lang$core$Dict$foldr = F3(
-	function (f, acc, t) {
-		foldr:
-		while (true) {
-			var _p0 = t;
-			if (_p0.ctor === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var _v1 = f,
-					_v2 = A3(
-					f,
-					_p0._1,
-					_p0._2,
-					A3(_elm_lang$core$Dict$foldr, f, acc, _p0._4)),
-					_v3 = _p0._3;
-				f = _v1;
-				acc = _v2;
-				t = _v3;
-				continue foldr;
-			}
-		}
-	});
-var _elm_lang$core$Dict$keys = function (dict) {
-	return A3(
-		_elm_lang$core$Dict$foldr,
-		F3(
-			function (key, value, keyList) {
-				return {ctor: '::', _0: key, _1: keyList};
-			}),
-		{ctor: '[]'},
-		dict);
-};
-var _elm_lang$core$Dict$values = function (dict) {
-	return A3(
-		_elm_lang$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return {ctor: '::', _0: value, _1: valueList};
-			}),
-		{ctor: '[]'},
-		dict);
-};
-var _elm_lang$core$Dict$toList = function (dict) {
-	return A3(
-		_elm_lang$core$Dict$foldr,
-		F3(
-			function (key, value, list) {
-				return {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: key, _1: value},
-					_1: list
-				};
-			}),
-		{ctor: '[]'},
-		dict);
-};
-var _elm_lang$core$Dict$foldl = F3(
-	function (f, acc, dict) {
-		foldl:
-		while (true) {
-			var _p1 = dict;
-			if (_p1.ctor === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var _v5 = f,
-					_v6 = A3(
-					f,
-					_p1._1,
-					_p1._2,
-					A3(_elm_lang$core$Dict$foldl, f, acc, _p1._3)),
-					_v7 = _p1._4;
-				f = _v5;
-				acc = _v6;
-				dict = _v7;
-				continue foldl;
-			}
-		}
-	});
-var _elm_lang$core$Dict$merge = F6(
-	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
-		var stepState = F3(
-			function (rKey, rValue, _p2) {
-				stepState:
-				while (true) {
-					var _p3 = _p2;
-					var _p9 = _p3._1;
-					var _p8 = _p3._0;
-					var _p4 = _p8;
-					if (_p4.ctor === '[]') {
-						return {
-							ctor: '_Tuple2',
-							_0: _p8,
-							_1: A3(rightStep, rKey, rValue, _p9)
-						};
-					} else {
-						var _p7 = _p4._1;
-						var _p6 = _p4._0._1;
-						var _p5 = _p4._0._0;
-						if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) < 0) {
-							var _v10 = rKey,
-								_v11 = rValue,
-								_v12 = {
-								ctor: '_Tuple2',
-								_0: _p7,
-								_1: A3(leftStep, _p5, _p6, _p9)
-							};
-							rKey = _v10;
-							rValue = _v11;
-							_p2 = _v12;
-							continue stepState;
-						} else {
-							if (_elm_lang$core$Native_Utils.cmp(_p5, rKey) > 0) {
-								return {
-									ctor: '_Tuple2',
-									_0: _p8,
-									_1: A3(rightStep, rKey, rValue, _p9)
-								};
-							} else {
-								return {
-									ctor: '_Tuple2',
-									_0: _p7,
-									_1: A4(bothStep, _p5, _p6, rValue, _p9)
-								};
-							}
-						}
-					}
-				}
-			});
-		var _p10 = A3(
-			_elm_lang$core$Dict$foldl,
-			stepState,
-			{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Dict$toList(leftDict),
-				_1: initialResult
-			},
-			rightDict);
-		var leftovers = _p10._0;
-		var intermediateResult = _p10._1;
-		return A3(
-			_elm_lang$core$List$foldl,
-			F2(
-				function (_p11, result) {
-					var _p12 = _p11;
-					return A3(leftStep, _p12._0, _p12._1, result);
-				}),
-			intermediateResult,
-			leftovers);
-	});
-var _elm_lang$core$Dict$reportRemBug = F4(
-	function (msg, c, lgot, rgot) {
-		return _elm_lang$core$Native_Debug.crash(
-			_elm_lang$core$String$concat(
-				{
-					ctor: '::',
-					_0: 'Internal red-black tree invariant violated, expected ',
-					_1: {
-						ctor: '::',
-						_0: msg,
-						_1: {
-							ctor: '::',
-							_0: ' and got ',
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$core$Basics$toString(c),
-								_1: {
-									ctor: '::',
-									_0: '/',
-									_1: {
-										ctor: '::',
-										_0: lgot,
-										_1: {
-											ctor: '::',
-											_0: '/',
-											_1: {
-												ctor: '::',
-												_0: rgot,
-												_1: {
-													ctor: '::',
-													_0: '\nPlease report this bug to <https://github.com/elm-lang/core/issues>',
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}));
-	});
-var _elm_lang$core$Dict$isBBlack = function (dict) {
-	var _p13 = dict;
-	_v14_2:
-	do {
-		if (_p13.ctor === 'RBNode_elm_builtin') {
-			if (_p13._0.ctor === 'BBlack') {
-				return true;
-			} else {
-				break _v14_2;
-			}
-		} else {
-			if (_p13._0.ctor === 'LBBlack') {
-				return true;
-			} else {
-				break _v14_2;
-			}
-		}
-	} while(false);
-	return false;
-};
-var _elm_lang$core$Dict$sizeHelp = F2(
-	function (n, dict) {
-		sizeHelp:
-		while (true) {
-			var _p14 = dict;
-			if (_p14.ctor === 'RBEmpty_elm_builtin') {
-				return n;
-			} else {
-				var _v16 = A2(_elm_lang$core$Dict$sizeHelp, n + 1, _p14._4),
-					_v17 = _p14._3;
-				n = _v16;
-				dict = _v17;
-				continue sizeHelp;
-			}
-		}
-	});
-var _elm_lang$core$Dict$size = function (dict) {
-	return A2(_elm_lang$core$Dict$sizeHelp, 0, dict);
-};
-var _elm_lang$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			var _p15 = dict;
-			if (_p15.ctor === 'RBEmpty_elm_builtin') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				var _p16 = A2(_elm_lang$core$Basics$compare, targetKey, _p15._1);
-				switch (_p16.ctor) {
-					case 'LT':
-						var _v20 = targetKey,
-							_v21 = _p15._3;
-						targetKey = _v20;
-						dict = _v21;
-						continue get;
-					case 'EQ':
-						return _elm_lang$core$Maybe$Just(_p15._2);
-					default:
-						var _v22 = targetKey,
-							_v23 = _p15._4;
-						targetKey = _v22;
-						dict = _v23;
-						continue get;
-				}
-			}
-		}
-	});
-var _elm_lang$core$Dict$member = F2(
-	function (key, dict) {
-		var _p17 = A2(_elm_lang$core$Dict$get, key, dict);
-		if (_p17.ctor === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var _elm_lang$core$Dict$maxWithDefault = F3(
-	function (k, v, r) {
-		maxWithDefault:
-		while (true) {
-			var _p18 = r;
-			if (_p18.ctor === 'RBEmpty_elm_builtin') {
-				return {ctor: '_Tuple2', _0: k, _1: v};
-			} else {
-				var _v26 = _p18._1,
-					_v27 = _p18._2,
-					_v28 = _p18._4;
-				k = _v26;
-				v = _v27;
-				r = _v28;
-				continue maxWithDefault;
-			}
-		}
-	});
-var _elm_lang$core$Dict$NBlack = {ctor: 'NBlack'};
-var _elm_lang$core$Dict$BBlack = {ctor: 'BBlack'};
-var _elm_lang$core$Dict$Black = {ctor: 'Black'};
-var _elm_lang$core$Dict$blackish = function (t) {
-	var _p19 = t;
-	if (_p19.ctor === 'RBNode_elm_builtin') {
-		var _p20 = _p19._0;
-		return _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$Black) || _elm_lang$core$Native_Utils.eq(_p20, _elm_lang$core$Dict$BBlack);
-	} else {
-		return true;
-	}
-};
-var _elm_lang$core$Dict$Red = {ctor: 'Red'};
-var _elm_lang$core$Dict$moreBlack = function (color) {
-	var _p21 = color;
-	switch (_p21.ctor) {
-		case 'Black':
-			return _elm_lang$core$Dict$BBlack;
-		case 'Red':
-			return _elm_lang$core$Dict$Black;
-		case 'NBlack':
-			return _elm_lang$core$Dict$Red;
-		default:
-			return _elm_lang$core$Native_Debug.crash('Can\'t make a double black node more black!');
-	}
-};
-var _elm_lang$core$Dict$lessBlack = function (color) {
-	var _p22 = color;
-	switch (_p22.ctor) {
-		case 'BBlack':
-			return _elm_lang$core$Dict$Black;
-		case 'Black':
-			return _elm_lang$core$Dict$Red;
-		case 'Red':
-			return _elm_lang$core$Dict$NBlack;
-		default:
-			return _elm_lang$core$Native_Debug.crash('Can\'t make a negative black node less black!');
-	}
-};
-var _elm_lang$core$Dict$LBBlack = {ctor: 'LBBlack'};
-var _elm_lang$core$Dict$LBlack = {ctor: 'LBlack'};
-var _elm_lang$core$Dict$RBEmpty_elm_builtin = function (a) {
-	return {ctor: 'RBEmpty_elm_builtin', _0: a};
-};
-var _elm_lang$core$Dict$empty = _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-var _elm_lang$core$Dict$isEmpty = function (dict) {
-	return _elm_lang$core$Native_Utils.eq(dict, _elm_lang$core$Dict$empty);
-};
-var _elm_lang$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {ctor: 'RBNode_elm_builtin', _0: a, _1: b, _2: c, _3: d, _4: e};
-	});
-var _elm_lang$core$Dict$ensureBlackRoot = function (dict) {
-	var _p23 = dict;
-	if ((_p23.ctor === 'RBNode_elm_builtin') && (_p23._0.ctor === 'Red')) {
-		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p23._1, _p23._2, _p23._3, _p23._4);
-	} else {
-		return dict;
-	}
-};
-var _elm_lang$core$Dict$lessBlackTree = function (dict) {
-	var _p24 = dict;
-	if (_p24.ctor === 'RBNode_elm_builtin') {
-		return A5(
-			_elm_lang$core$Dict$RBNode_elm_builtin,
-			_elm_lang$core$Dict$lessBlack(_p24._0),
-			_p24._1,
-			_p24._2,
-			_p24._3,
-			_p24._4);
-	} else {
-		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-	}
-};
-var _elm_lang$core$Dict$balancedTree = function (col) {
-	return function (xk) {
-		return function (xv) {
-			return function (yk) {
-				return function (yv) {
-					return function (zk) {
-						return function (zv) {
-							return function (a) {
-								return function (b) {
-									return function (c) {
-										return function (d) {
-											return A5(
-												_elm_lang$core$Dict$RBNode_elm_builtin,
-												_elm_lang$core$Dict$lessBlack(col),
-												yk,
-												yv,
-												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, xk, xv, a, b),
-												A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, zk, zv, c, d));
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var _elm_lang$core$Dict$blacken = function (t) {
-	var _p25 = t;
-	if (_p25.ctor === 'RBEmpty_elm_builtin') {
-		return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-	} else {
-		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p25._1, _p25._2, _p25._3, _p25._4);
-	}
-};
-var _elm_lang$core$Dict$redden = function (t) {
-	var _p26 = t;
-	if (_p26.ctor === 'RBEmpty_elm_builtin') {
-		return _elm_lang$core$Native_Debug.crash('can\'t make a Leaf red');
-	} else {
-		return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, _p26._1, _p26._2, _p26._3, _p26._4);
-	}
-};
-var _elm_lang$core$Dict$balanceHelp = function (tree) {
-	var _p27 = tree;
-	_v36_6:
-	do {
-		_v36_5:
-		do {
-			_v36_4:
-			do {
-				_v36_3:
-				do {
-					_v36_2:
-					do {
-						_v36_1:
-						do {
-							_v36_0:
-							do {
-								if (_p27.ctor === 'RBNode_elm_builtin') {
-									if (_p27._3.ctor === 'RBNode_elm_builtin') {
-										if (_p27._4.ctor === 'RBNode_elm_builtin') {
-											switch (_p27._3._0.ctor) {
-												case 'Red':
-													switch (_p27._4._0.ctor) {
-														case 'Red':
-															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v36_0;
-															} else {
-																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v36_1;
-																} else {
-																	if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																		break _v36_2;
-																	} else {
-																		if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																			break _v36_3;
-																		} else {
-																			break _v36_6;
-																		}
-																	}
-																}
-															}
-														case 'NBlack':
-															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v36_0;
-															} else {
-																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v36_1;
-																} else {
-																	if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																		break _v36_4;
-																	} else {
-																		break _v36_6;
-																	}
-																}
-															}
-														default:
-															if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-																break _v36_0;
-															} else {
-																if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-																	break _v36_1;
-																} else {
-																	break _v36_6;
-																}
-															}
-													}
-												case 'NBlack':
-													switch (_p27._4._0.ctor) {
-														case 'Red':
-															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																break _v36_2;
-															} else {
-																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																	break _v36_3;
-																} else {
-																	if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																		break _v36_5;
-																	} else {
-																		break _v36_6;
-																	}
-																}
-															}
-														case 'NBlack':
-															if (_p27._0.ctor === 'BBlack') {
-																if ((((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																	break _v36_4;
-																} else {
-																	if ((((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																		break _v36_5;
-																	} else {
-																		break _v36_6;
-																	}
-																}
-															} else {
-																break _v36_6;
-															}
-														default:
-															if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-																break _v36_5;
-															} else {
-																break _v36_6;
-															}
-													}
-												default:
-													switch (_p27._4._0.ctor) {
-														case 'Red':
-															if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-																break _v36_2;
-															} else {
-																if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-																	break _v36_3;
-																} else {
-																	break _v36_6;
-																}
-															}
-														case 'NBlack':
-															if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-																break _v36_4;
-															} else {
-																break _v36_6;
-															}
-														default:
-															break _v36_6;
-													}
-											}
-										} else {
-											switch (_p27._3._0.ctor) {
-												case 'Red':
-													if ((_p27._3._3.ctor === 'RBNode_elm_builtin') && (_p27._3._3._0.ctor === 'Red')) {
-														break _v36_0;
-													} else {
-														if ((_p27._3._4.ctor === 'RBNode_elm_builtin') && (_p27._3._4._0.ctor === 'Red')) {
-															break _v36_1;
-														} else {
-															break _v36_6;
-														}
-													}
-												case 'NBlack':
-													if (((((_p27._0.ctor === 'BBlack') && (_p27._3._3.ctor === 'RBNode_elm_builtin')) && (_p27._3._3._0.ctor === 'Black')) && (_p27._3._4.ctor === 'RBNode_elm_builtin')) && (_p27._3._4._0.ctor === 'Black')) {
-														break _v36_5;
-													} else {
-														break _v36_6;
-													}
-												default:
-													break _v36_6;
-											}
-										}
-									} else {
-										if (_p27._4.ctor === 'RBNode_elm_builtin') {
-											switch (_p27._4._0.ctor) {
-												case 'Red':
-													if ((_p27._4._3.ctor === 'RBNode_elm_builtin') && (_p27._4._3._0.ctor === 'Red')) {
-														break _v36_2;
-													} else {
-														if ((_p27._4._4.ctor === 'RBNode_elm_builtin') && (_p27._4._4._0.ctor === 'Red')) {
-															break _v36_3;
-														} else {
-															break _v36_6;
-														}
-													}
-												case 'NBlack':
-													if (((((_p27._0.ctor === 'BBlack') && (_p27._4._3.ctor === 'RBNode_elm_builtin')) && (_p27._4._3._0.ctor === 'Black')) && (_p27._4._4.ctor === 'RBNode_elm_builtin')) && (_p27._4._4._0.ctor === 'Black')) {
-														break _v36_4;
-													} else {
-														break _v36_6;
-													}
-												default:
-													break _v36_6;
-											}
-										} else {
-											break _v36_6;
-										}
-									}
-								} else {
-									break _v36_6;
-								}
-							} while(false);
-							return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._3._1)(_p27._3._3._2)(_p27._3._1)(_p27._3._2)(_p27._1)(_p27._2)(_p27._3._3._3)(_p27._3._3._4)(_p27._3._4)(_p27._4);
-						} while(false);
-						return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._3._1)(_p27._3._2)(_p27._3._4._1)(_p27._3._4._2)(_p27._1)(_p27._2)(_p27._3._3)(_p27._3._4._3)(_p27._3._4._4)(_p27._4);
-					} while(false);
-					return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._3._1)(_p27._4._3._2)(_p27._4._1)(_p27._4._2)(_p27._3)(_p27._4._3._3)(_p27._4._3._4)(_p27._4._4);
-				} while(false);
-				return _elm_lang$core$Dict$balancedTree(_p27._0)(_p27._1)(_p27._2)(_p27._4._1)(_p27._4._2)(_p27._4._4._1)(_p27._4._4._2)(_p27._3)(_p27._4._3)(_p27._4._4._3)(_p27._4._4._4);
-			} while(false);
-			return A5(
-				_elm_lang$core$Dict$RBNode_elm_builtin,
-				_elm_lang$core$Dict$Black,
-				_p27._4._3._1,
-				_p27._4._3._2,
-				A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3, _p27._4._3._3),
-				A5(
-					_elm_lang$core$Dict$balance,
-					_elm_lang$core$Dict$Black,
-					_p27._4._1,
-					_p27._4._2,
-					_p27._4._3._4,
-					_elm_lang$core$Dict$redden(_p27._4._4)));
-		} while(false);
-		return A5(
-			_elm_lang$core$Dict$RBNode_elm_builtin,
-			_elm_lang$core$Dict$Black,
-			_p27._3._4._1,
-			_p27._3._4._2,
-			A5(
-				_elm_lang$core$Dict$balance,
-				_elm_lang$core$Dict$Black,
-				_p27._3._1,
-				_p27._3._2,
-				_elm_lang$core$Dict$redden(_p27._3._3),
-				_p27._3._4._3),
-			A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p27._1, _p27._2, _p27._3._4._4, _p27._4));
-	} while(false);
-	return tree;
-};
-var _elm_lang$core$Dict$balance = F5(
-	function (c, k, v, l, r) {
-		var tree = A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
-		return _elm_lang$core$Dict$blackish(tree) ? _elm_lang$core$Dict$balanceHelp(tree) : tree;
-	});
-var _elm_lang$core$Dict$bubble = F5(
-	function (c, k, v, l, r) {
-		return (_elm_lang$core$Dict$isBBlack(l) || _elm_lang$core$Dict$isBBlack(r)) ? A5(
-			_elm_lang$core$Dict$balance,
-			_elm_lang$core$Dict$moreBlack(c),
-			k,
-			v,
-			_elm_lang$core$Dict$lessBlackTree(l),
-			_elm_lang$core$Dict$lessBlackTree(r)) : A5(_elm_lang$core$Dict$RBNode_elm_builtin, c, k, v, l, r);
-	});
-var _elm_lang$core$Dict$removeMax = F5(
-	function (c, k, v, l, r) {
-		var _p28 = r;
-		if (_p28.ctor === 'RBEmpty_elm_builtin') {
-			return A3(_elm_lang$core$Dict$rem, c, l, r);
-		} else {
-			return A5(
-				_elm_lang$core$Dict$bubble,
-				c,
-				k,
-				v,
-				l,
-				A5(_elm_lang$core$Dict$removeMax, _p28._0, _p28._1, _p28._2, _p28._3, _p28._4));
-		}
-	});
-var _elm_lang$core$Dict$rem = F3(
-	function (color, left, right) {
-		var _p29 = {ctor: '_Tuple2', _0: left, _1: right};
-		if (_p29._0.ctor === 'RBEmpty_elm_builtin') {
-			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
-				var _p30 = color;
-				switch (_p30.ctor) {
-					case 'Red':
-						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-					case 'Black':
-						return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBBlack);
-					default:
-						return _elm_lang$core$Native_Debug.crash('cannot have bblack or nblack nodes at this point');
-				}
-			} else {
-				var _p33 = _p29._1._0;
-				var _p32 = _p29._0._0;
-				var _p31 = {ctor: '_Tuple3', _0: color, _1: _p32, _2: _p33};
-				if ((((_p31.ctor === '_Tuple3') && (_p31._0.ctor === 'Black')) && (_p31._1.ctor === 'LBlack')) && (_p31._2.ctor === 'Red')) {
-					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._1._1, _p29._1._2, _p29._1._3, _p29._1._4);
-				} else {
-					return A4(
-						_elm_lang$core$Dict$reportRemBug,
-						'Black/LBlack/Red',
-						color,
-						_elm_lang$core$Basics$toString(_p32),
-						_elm_lang$core$Basics$toString(_p33));
-				}
-			}
-		} else {
-			if (_p29._1.ctor === 'RBEmpty_elm_builtin') {
-				var _p36 = _p29._1._0;
-				var _p35 = _p29._0._0;
-				var _p34 = {ctor: '_Tuple3', _0: color, _1: _p35, _2: _p36};
-				if ((((_p34.ctor === '_Tuple3') && (_p34._0.ctor === 'Black')) && (_p34._1.ctor === 'Red')) && (_p34._2.ctor === 'LBlack')) {
-					return A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Black, _p29._0._1, _p29._0._2, _p29._0._3, _p29._0._4);
-				} else {
-					return A4(
-						_elm_lang$core$Dict$reportRemBug,
-						'Black/Red/LBlack',
-						color,
-						_elm_lang$core$Basics$toString(_p35),
-						_elm_lang$core$Basics$toString(_p36));
-				}
-			} else {
-				var _p40 = _p29._0._2;
-				var _p39 = _p29._0._4;
-				var _p38 = _p29._0._1;
-				var newLeft = A5(_elm_lang$core$Dict$removeMax, _p29._0._0, _p38, _p40, _p29._0._3, _p39);
-				var _p37 = A3(_elm_lang$core$Dict$maxWithDefault, _p38, _p40, _p39);
-				var k = _p37._0;
-				var v = _p37._1;
-				return A5(_elm_lang$core$Dict$bubble, color, k, v, newLeft, right);
-			}
-		}
-	});
-var _elm_lang$core$Dict$map = F2(
-	function (f, dict) {
-		var _p41 = dict;
-		if (_p41.ctor === 'RBEmpty_elm_builtin') {
-			return _elm_lang$core$Dict$RBEmpty_elm_builtin(_elm_lang$core$Dict$LBlack);
-		} else {
-			var _p42 = _p41._1;
-			return A5(
-				_elm_lang$core$Dict$RBNode_elm_builtin,
-				_p41._0,
-				_p42,
-				A2(f, _p42, _p41._2),
-				A2(_elm_lang$core$Dict$map, f, _p41._3),
-				A2(_elm_lang$core$Dict$map, f, _p41._4));
-		}
-	});
-var _elm_lang$core$Dict$Same = {ctor: 'Same'};
-var _elm_lang$core$Dict$Remove = {ctor: 'Remove'};
-var _elm_lang$core$Dict$Insert = {ctor: 'Insert'};
-var _elm_lang$core$Dict$update = F3(
-	function (k, alter, dict) {
-		var up = function (dict) {
-			var _p43 = dict;
-			if (_p43.ctor === 'RBEmpty_elm_builtin') {
-				var _p44 = alter(_elm_lang$core$Maybe$Nothing);
-				if (_p44.ctor === 'Nothing') {
-					return {ctor: '_Tuple2', _0: _elm_lang$core$Dict$Same, _1: _elm_lang$core$Dict$empty};
-				} else {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Dict$Insert,
-						_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _elm_lang$core$Dict$Red, k, _p44._0, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty)
-					};
-				}
-			} else {
-				var _p55 = _p43._2;
-				var _p54 = _p43._4;
-				var _p53 = _p43._3;
-				var _p52 = _p43._1;
-				var _p51 = _p43._0;
-				var _p45 = A2(_elm_lang$core$Basics$compare, k, _p52);
-				switch (_p45.ctor) {
-					case 'EQ':
-						var _p46 = alter(
-							_elm_lang$core$Maybe$Just(_p55));
-						if (_p46.ctor === 'Nothing') {
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Dict$Remove,
-								_1: A3(_elm_lang$core$Dict$rem, _p51, _p53, _p54)
-							};
-						} else {
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Dict$Same,
-								_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p46._0, _p53, _p54)
-							};
-						}
-					case 'LT':
-						var _p47 = up(_p53);
-						var flag = _p47._0;
-						var newLeft = _p47._1;
-						var _p48 = flag;
-						switch (_p48.ctor) {
-							case 'Same':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Same,
-									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, newLeft, _p54)
-								};
-							case 'Insert':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Insert,
-									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, newLeft, _p54)
-								};
-							default:
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Remove,
-									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, newLeft, _p54)
-								};
-						}
-					default:
-						var _p49 = up(_p54);
-						var flag = _p49._0;
-						var newRight = _p49._1;
-						var _p50 = flag;
-						switch (_p50.ctor) {
-							case 'Same':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Same,
-									_1: A5(_elm_lang$core$Dict$RBNode_elm_builtin, _p51, _p52, _p55, _p53, newRight)
-								};
-							case 'Insert':
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Insert,
-									_1: A5(_elm_lang$core$Dict$balance, _p51, _p52, _p55, _p53, newRight)
-								};
-							default:
-								return {
-									ctor: '_Tuple2',
-									_0: _elm_lang$core$Dict$Remove,
-									_1: A5(_elm_lang$core$Dict$bubble, _p51, _p52, _p55, _p53, newRight)
-								};
-						}
-				}
-			}
-		};
-		var _p56 = up(dict);
-		var flag = _p56._0;
-		var updatedDict = _p56._1;
-		var _p57 = flag;
-		switch (_p57.ctor) {
-			case 'Same':
-				return updatedDict;
-			case 'Insert':
-				return _elm_lang$core$Dict$ensureBlackRoot(updatedDict);
-			default:
-				return _elm_lang$core$Dict$blacken(updatedDict);
-		}
-	});
-var _elm_lang$core$Dict$insert = F3(
-	function (key, value, dict) {
-		return A3(
-			_elm_lang$core$Dict$update,
-			key,
-			_elm_lang$core$Basics$always(
-				_elm_lang$core$Maybe$Just(value)),
-			dict);
-	});
-var _elm_lang$core$Dict$singleton = F2(
-	function (key, value) {
-		return A3(_elm_lang$core$Dict$insert, key, value, _elm_lang$core$Dict$empty);
-	});
-var _elm_lang$core$Dict$union = F2(
-	function (t1, t2) {
-		return A3(_elm_lang$core$Dict$foldl, _elm_lang$core$Dict$insert, t2, t1);
-	});
-var _elm_lang$core$Dict$filter = F2(
-	function (predicate, dictionary) {
-		var add = F3(
-			function (key, value, dict) {
-				return A2(predicate, key, value) ? A3(_elm_lang$core$Dict$insert, key, value, dict) : dict;
-			});
-		return A3(_elm_lang$core$Dict$foldl, add, _elm_lang$core$Dict$empty, dictionary);
-	});
-var _elm_lang$core$Dict$intersect = F2(
-	function (t1, t2) {
-		return A2(
-			_elm_lang$core$Dict$filter,
-			F2(
-				function (k, _p58) {
-					return A2(_elm_lang$core$Dict$member, k, t2);
-				}),
-			t1);
-	});
-var _elm_lang$core$Dict$partition = F2(
-	function (predicate, dict) {
-		var add = F3(
-			function (key, value, _p59) {
-				var _p60 = _p59;
-				var _p62 = _p60._1;
-				var _p61 = _p60._0;
-				return A2(predicate, key, value) ? {
-					ctor: '_Tuple2',
-					_0: A3(_elm_lang$core$Dict$insert, key, value, _p61),
-					_1: _p62
-				} : {
-					ctor: '_Tuple2',
-					_0: _p61,
-					_1: A3(_elm_lang$core$Dict$insert, key, value, _p62)
-				};
-			});
-		return A3(
-			_elm_lang$core$Dict$foldl,
-			add,
-			{ctor: '_Tuple2', _0: _elm_lang$core$Dict$empty, _1: _elm_lang$core$Dict$empty},
-			dict);
-	});
-var _elm_lang$core$Dict$fromList = function (assocs) {
-	return A3(
-		_elm_lang$core$List$foldl,
-		F2(
-			function (_p63, dict) {
-				var _p64 = _p63;
-				return A3(_elm_lang$core$Dict$insert, _p64._0, _p64._1, dict);
-			}),
-		_elm_lang$core$Dict$empty,
-		assocs);
-};
-var _elm_lang$core$Dict$remove = F2(
-	function (key, dict) {
-		return A3(
-			_elm_lang$core$Dict$update,
-			key,
-			_elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
-			dict);
-	});
-var _elm_lang$core$Dict$diff = F2(
-	function (t1, t2) {
-		return A3(
-			_elm_lang$core$Dict$foldl,
-			F3(
-				function (k, v, t) {
-					return A2(_elm_lang$core$Dict$remove, k, t);
-				}),
-			t1,
-			t2);
-	});
-
 //import Maybe, Native.Array, Native.List, Native.Utils, Result //
 
 var _elm_lang$core$Native_Json = function() {
@@ -5828,6 +5959,221 @@ var _elm_lang$core$Json_Decode$int = _elm_lang$core$Native_Json.decodePrimitive(
 var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive('bool');
 var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
 var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
+
+var _elm_community$dict_extra$Dict_Extra$find = F2(
+	function (predicate, dict) {
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, v, acc) {
+					var _p0 = acc;
+					if (_p0.ctor === 'Just') {
+						return acc;
+					} else {
+						return A2(predicate, k, v) ? _elm_lang$core$Maybe$Just(
+							{ctor: '_Tuple2', _0: k, _1: v}) : _elm_lang$core$Maybe$Nothing;
+					}
+				}),
+			_elm_lang$core$Maybe$Nothing,
+			dict);
+	});
+var _elm_community$dict_extra$Dict_Extra$invert = function (dict) {
+	return A3(
+		_elm_lang$core$Dict$foldl,
+		F3(
+			function (k, v, acc) {
+				return A3(_elm_lang$core$Dict$insert, v, k, acc);
+			}),
+		_elm_lang$core$Dict$empty,
+		dict);
+};
+var _elm_community$dict_extra$Dict_Extra$filterMap = F2(
+	function (f, dict) {
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, v, acc) {
+					var _p1 = A2(f, k, v);
+					if (_p1.ctor === 'Just') {
+						return A3(_elm_lang$core$Dict$insert, k, _p1._0, acc);
+					} else {
+						return acc;
+					}
+				}),
+			_elm_lang$core$Dict$empty,
+			dict);
+	});
+var _elm_community$dict_extra$Dict_Extra$mapKeys = F2(
+	function (keyMapper, dict) {
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, v, acc) {
+					return A3(
+						_elm_lang$core$Dict$insert,
+						keyMapper(k),
+						v,
+						acc);
+				}),
+			_elm_lang$core$Dict$empty,
+			dict);
+	});
+var _elm_community$dict_extra$Dict_Extra$keepOnly = F2(
+	function (set, dict) {
+		return A3(
+			_elm_lang$core$Set$foldl,
+			F2(
+				function (k, acc) {
+					return A2(
+						_elm_lang$core$Maybe$withDefault,
+						acc,
+						A2(
+							_elm_lang$core$Maybe$map,
+							function (v) {
+								return A3(_elm_lang$core$Dict$insert, k, v, acc);
+							},
+							A2(_elm_lang$core$Dict$get, k, dict)));
+				}),
+			_elm_lang$core$Dict$empty,
+			set);
+	});
+var _elm_community$dict_extra$Dict_Extra$insertDedupe = F4(
+	function (combine, key, value, dict) {
+		var $with = function (mbValue) {
+			var _p2 = mbValue;
+			if (_p2.ctor === 'Just') {
+				return _elm_lang$core$Maybe$Just(
+					A2(combine, _p2._0, value));
+			} else {
+				return _elm_lang$core$Maybe$Just(value);
+			}
+		};
+		return A3(_elm_lang$core$Dict$update, key, $with, dict);
+	});
+var _elm_community$dict_extra$Dict_Extra$removeMany = F2(
+	function (set, dict) {
+		return A3(_elm_lang$core$Set$foldl, _elm_lang$core$Dict$remove, dict, set);
+	});
+var _elm_community$dict_extra$Dict_Extra$removeWhen = F2(
+	function (pred, dict) {
+		return A2(
+			_elm_lang$core$Dict$filter,
+			F2(
+				function (k, v) {
+					return !A2(pred, k, v);
+				}),
+			dict);
+	});
+var _elm_community$dict_extra$Dict_Extra$fromListDedupeBy = F3(
+	function (combine, keyfn, xs) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			F2(
+				function (x, acc) {
+					return A4(
+						_elm_community$dict_extra$Dict_Extra$insertDedupe,
+						combine,
+						keyfn(x),
+						x,
+						acc);
+				}),
+			_elm_lang$core$Dict$empty,
+			xs);
+	});
+var _elm_community$dict_extra$Dict_Extra$fromListDedupe = F2(
+	function (combine, xs) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			F2(
+				function (_p3, acc) {
+					var _p4 = _p3;
+					return A4(_elm_community$dict_extra$Dict_Extra$insertDedupe, combine, _p4._0, _p4._1, acc);
+				}),
+			_elm_lang$core$Dict$empty,
+			xs);
+	});
+var _elm_community$dict_extra$Dict_Extra$fromListBy = F2(
+	function (keyfn, xs) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			F2(
+				function (x, acc) {
+					return A3(
+						_elm_lang$core$Dict$insert,
+						keyfn(x),
+						x,
+						acc);
+				}),
+			_elm_lang$core$Dict$empty,
+			xs);
+	});
+var _elm_community$dict_extra$Dict_Extra$filterGroupBy = F2(
+	function (keyfn, list) {
+		return A3(
+			_elm_lang$core$List$foldr,
+			F2(
+				function (x, acc) {
+					var _p5 = keyfn(x);
+					if (_p5.ctor === 'Just') {
+						return A3(
+							_elm_lang$core$Dict$update,
+							_p5._0,
+							function (_p6) {
+								return _elm_lang$core$Maybe$Just(
+									A2(
+										_elm_lang$core$Maybe$withDefault,
+										{
+											ctor: '::',
+											_0: x,
+											_1: {ctor: '[]'}
+										},
+										A2(
+											_elm_lang$core$Maybe$map,
+											F2(
+												function (x, y) {
+													return {ctor: '::', _0: x, _1: y};
+												})(x),
+											_p6)));
+							},
+							acc);
+					} else {
+						return acc;
+					}
+				}),
+			_elm_lang$core$Dict$empty,
+			list);
+	});
+var _elm_community$dict_extra$Dict_Extra$groupBy = F2(
+	function (keyfn, list) {
+		return A3(
+			_elm_lang$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A3(
+						_elm_lang$core$Dict$update,
+						keyfn(x),
+						function (_p7) {
+							return _elm_lang$core$Maybe$Just(
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									{
+										ctor: '::',
+										_0: x,
+										_1: {ctor: '[]'}
+									},
+									A2(
+										_elm_lang$core$Maybe$map,
+										F2(
+											function (x, y) {
+												return {ctor: '::', _0: x, _1: y};
+											})(x),
+										_p7)));
+						},
+						acc);
+				}),
+			_elm_lang$core$Dict$empty,
+			list);
+	});
 
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrap;
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags;
@@ -8330,137 +8676,6 @@ var _elm_lang$html$Html_Events$onClick = function (msg) {
 var _elm_lang$html$Html_Events$Options = F2(
 	function (a, b) {
 		return {stopPropagation: a, preventDefault: b};
-	});
-
-var _elm_lang$core$Set$foldr = F3(
-	function (f, b, _p0) {
-		var _p1 = _p0;
-		return A3(
-			_elm_lang$core$Dict$foldr,
-			F3(
-				function (k, _p2, b) {
-					return A2(f, k, b);
-				}),
-			b,
-			_p1._0);
-	});
-var _elm_lang$core$Set$foldl = F3(
-	function (f, b, _p3) {
-		var _p4 = _p3;
-		return A3(
-			_elm_lang$core$Dict$foldl,
-			F3(
-				function (k, _p5, b) {
-					return A2(f, k, b);
-				}),
-			b,
-			_p4._0);
-	});
-var _elm_lang$core$Set$toList = function (_p6) {
-	var _p7 = _p6;
-	return _elm_lang$core$Dict$keys(_p7._0);
-};
-var _elm_lang$core$Set$size = function (_p8) {
-	var _p9 = _p8;
-	return _elm_lang$core$Dict$size(_p9._0);
-};
-var _elm_lang$core$Set$member = F2(
-	function (k, _p10) {
-		var _p11 = _p10;
-		return A2(_elm_lang$core$Dict$member, k, _p11._0);
-	});
-var _elm_lang$core$Set$isEmpty = function (_p12) {
-	var _p13 = _p12;
-	return _elm_lang$core$Dict$isEmpty(_p13._0);
-};
-var _elm_lang$core$Set$Set_elm_builtin = function (a) {
-	return {ctor: 'Set_elm_builtin', _0: a};
-};
-var _elm_lang$core$Set$empty = _elm_lang$core$Set$Set_elm_builtin(_elm_lang$core$Dict$empty);
-var _elm_lang$core$Set$singleton = function (k) {
-	return _elm_lang$core$Set$Set_elm_builtin(
-		A2(
-			_elm_lang$core$Dict$singleton,
-			k,
-			{ctor: '_Tuple0'}));
-};
-var _elm_lang$core$Set$insert = F2(
-	function (k, _p14) {
-		var _p15 = _p14;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A3(
-				_elm_lang$core$Dict$insert,
-				k,
-				{ctor: '_Tuple0'},
-				_p15._0));
-	});
-var _elm_lang$core$Set$fromList = function (xs) {
-	return A3(_elm_lang$core$List$foldl, _elm_lang$core$Set$insert, _elm_lang$core$Set$empty, xs);
-};
-var _elm_lang$core$Set$map = F2(
-	function (f, s) {
-		return _elm_lang$core$Set$fromList(
-			A2(
-				_elm_lang$core$List$map,
-				f,
-				_elm_lang$core$Set$toList(s)));
-	});
-var _elm_lang$core$Set$remove = F2(
-	function (k, _p16) {
-		var _p17 = _p16;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$remove, k, _p17._0));
-	});
-var _elm_lang$core$Set$union = F2(
-	function (_p19, _p18) {
-		var _p20 = _p19;
-		var _p21 = _p18;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$union, _p20._0, _p21._0));
-	});
-var _elm_lang$core$Set$intersect = F2(
-	function (_p23, _p22) {
-		var _p24 = _p23;
-		var _p25 = _p22;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$intersect, _p24._0, _p25._0));
-	});
-var _elm_lang$core$Set$diff = F2(
-	function (_p27, _p26) {
-		var _p28 = _p27;
-		var _p29 = _p26;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$diff, _p28._0, _p29._0));
-	});
-var _elm_lang$core$Set$filter = F2(
-	function (p, _p30) {
-		var _p31 = _p30;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(
-				_elm_lang$core$Dict$filter,
-				F2(
-					function (k, _p32) {
-						return p(k);
-					}),
-				_p31._0));
-	});
-var _elm_lang$core$Set$partition = F2(
-	function (p, _p33) {
-		var _p34 = _p33;
-		var _p35 = A2(
-			_elm_lang$core$Dict$partition,
-			F2(
-				function (k, _p36) {
-					return p(k);
-				}),
-			_p34._0);
-		var p1 = _p35._0;
-		var p2 = _p35._1;
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Set$Set_elm_builtin(p1),
-			_1: _elm_lang$core$Set$Set_elm_builtin(p2)
-		};
 	});
 
 var _elm_community$list_extra$List_Extra$greedyGroupsOfWithStep = F3(
@@ -11700,329 +11915,353 @@ var _lynn$wordpet$Stats$names = {
 										_0: 'Appetite',
 										_1: {
 											ctor: '::',
-											_0: 'Armor Class',
+											_0: 'Arithmetic',
 											_1: {
 												ctor: '::',
-												_0: 'Attention Span',
+												_0: 'Armor Class',
 												_1: {
 													ctor: '::',
-													_0: 'Beepiness',
+													_0: 'Attention Span',
 													_1: {
 														ctor: '::',
-														_0: 'Bioluminescence',
+														_0: 'Beepiness',
 														_1: {
 															ctor: '::',
-															_0: 'Bookishness',
+															_0: 'Bioluminescence',
 															_1: {
 																ctor: '::',
-																_0: 'Bounce',
+																_0: 'Bookishness',
 																_1: {
 																	ctor: '::',
-																	_0: 'Buoyancy',
+																	_0: 'Bounce',
 																	_1: {
 																		ctor: '::',
-																		_0: 'Buyer Satisfaction',
+																		_0: 'Buoyancy',
 																		_1: {
 																			ctor: '::',
-																			_0: 'Caprice',
+																			_0: 'Buyer Satisfaction',
 																			_1: {
 																				ctor: '::',
-																				_0: 'Charm',
+																				_0: 'Caprice',
 																				_1: {
 																					ctor: '::',
-																					_0: 'Clumsiness',
+																					_0: 'Charm',
 																					_1: {
 																						ctor: '::',
-																						_0: 'Controller Ports',
+																						_0: 'Clumsiness',
 																						_1: {
 																							ctor: '::',
-																							_0: 'Coolness',
+																							_0: 'Controller Ports',
 																							_1: {
 																								ctor: '::',
-																								_0: 'Cunning',
+																								_0: 'Coolness',
 																								_1: {
 																									ctor: '::',
-																									_0: 'Curiosity',
+																									_0: 'Cuddliness',
 																									_1: {
 																										ctor: '::',
-																										_0: 'Cushiony',
+																										_0: 'Cunning',
 																										_1: {
 																											ctor: '::',
-																											_0: 'Daydreaming',
+																											_0: 'Curiosity',
 																											_1: {
 																												ctor: '::',
-																												_0: 'Density',
+																												_0: 'Cushiony',
 																												_1: {
 																													ctor: '::',
-																													_0: 'Difficulty',
+																													_0: 'Daydreaming',
 																													_1: {
 																														ctor: '::',
-																														_0: 'Draw Distance',
+																														_0: 'Density',
 																														_1: {
 																															ctor: '::',
-																															_0: 'Durability',
+																															_0: 'Difficulty',
 																															_1: {
 																																ctor: '::',
-																																_0: 'Eco-friendliness',
+																																_0: 'Durability',
 																																_1: {
 																																	ctor: '::',
-																																	_0: 'Edginess',
+																																	_0: 'Eco-friendliness',
 																																	_1: {
 																																		ctor: '::',
-																																		_0: 'Elasticity',
+																																		_0: 'Edginess',
 																																		_1: {
 																																			ctor: '::',
-																																			_0: 'Entrepreneurship',
+																																			_0: 'Elasticity',
 																																			_1: {
 																																				ctor: '::',
-																																				_0: 'Erdős Number',
+																																				_0: 'Entrepreneurship',
 																																				_1: {
 																																					ctor: '::',
-																																					_0: 'Etiquette',
+																																					_0: 'Erdős Number',
 																																					_1: {
 																																						ctor: '::',
-																																						_0: 'Eye Sparkle',
+																																						_0: 'Ergonomics',
 																																						_1: {
 																																							ctor: '::',
-																																							_0: 'Fashion',
+																																							_0: 'Etiquette',
 																																							_1: {
 																																								ctor: '::',
-																																								_0: 'Favorite Number',
+																																								_0: 'Eye Sparkle',
 																																								_1: {
 																																									ctor: '::',
-																																									_0: 'Fire Resistance',
+																																									_0: 'Fashion',
 																																									_1: {
 																																										ctor: '::',
-																																										_0: 'Forgetfulness',
+																																										_0: 'Favorite Number',
 																																										_1: {
 																																											ctor: '::',
-																																											_0: 'Friendship',
+																																											_0: 'Fire Resistance',
 																																											_1: {
 																																												ctor: '::',
-																																												_0: 'Gender',
+																																												_0: 'Firmware Version',
 																																												_1: {
 																																													ctor: '::',
-																																													_0: 'Good Vibes',
+																																													_0: 'Font Pickiness',
 																																													_1: {
 																																														ctor: '::',
-																																														_0: 'Grace',
+																																														_0: 'Forgetfulness',
 																																														_1: {
 																																															ctor: '::',
-																																															_0: 'Grip Strength',
+																																															_0: 'Friendship',
 																																															_1: {
 																																																ctor: '::',
-																																																_0: 'Guts',
+																																																_0: 'Gender',
 																																																_1: {
 																																																	ctor: '::',
-																																																	_0: 'Haughtiness',
+																																																	_0: 'Good Vibes',
 																																																	_1: {
 																																																		ctor: '::',
-																																																		_0: 'Hit Dice',
+																																																		_0: 'Grace',
 																																																		_1: {
 																																																			ctor: '::',
-																																																			_0: 'Honesty',
+																																																			_0: 'Grip Strength',
 																																																			_1: {
 																																																				ctor: '::',
-																																																				_0: 'Humor',
+																																																				_0: 'Guts',
 																																																				_1: {
 																																																					ctor: '::',
-																																																					_0: 'Imagination',
+																																																					_0: 'Haughtiness',
 																																																					_1: {
 																																																						ctor: '::',
-																																																						_0: 'Independence',
+																																																						_0: 'Hit Dice',
 																																																						_1: {
 																																																							ctor: '::',
-																																																							_0: 'Insubordination',
+																																																							_0: 'Honesty',
 																																																							_1: {
 																																																								ctor: '::',
-																																																								_0: 'Jitteriness',
+																																																								_0: 'Humor',
 																																																								_1: {
 																																																									ctor: '::',
-																																																									_0: 'Jumpiness',
+																																																									_0: 'Imagination',
 																																																									_1: {
 																																																										ctor: '::',
-																																																										_0: 'Laziness',
+																																																										_0: 'Independence',
 																																																										_1: {
 																																																											ctor: '::',
-																																																											_0: 'Leadership',
+																																																											_0: 'Insubordination',
 																																																											_1: {
 																																																												ctor: '::',
-																																																												_0: 'Loudness',
+																																																												_0: 'Jitteriness',
 																																																												_1: {
 																																																													ctor: '::',
-																																																													_0: 'Luck',
+																																																													_0: 'Jumpiness',
 																																																													_1: {
 																																																														ctor: '::',
-																																																														_0: 'Magic',
+																																																														_0: 'Laziness',
 																																																														_1: {
 																																																															ctor: '::',
-																																																															_0: 'Malleability',
+																																																															_0: 'Leadership',
 																																																															_1: {
 																																																																ctor: '::',
-																																																																_0: 'Mario Kart Savvy',
+																																																																_0: 'Loudness',
 																																																																_1: {
 																																																																	ctor: '::',
-																																																																	_0: 'Melancholy',
+																																																																	_0: 'Luck',
 																																																																	_1: {
 																																																																		ctor: '::',
-																																																																		_0: '‘Memento’ Rating',
+																																																																		_0: 'Magic',
 																																																																		_1: {
 																																																																			ctor: '::',
-																																																																			_0: 'Mettle',
+																																																																			_0: 'Malleability',
 																																																																			_1: {
 																																																																				ctor: '::',
-																																																																				_0: 'Mischief',
+																																																																				_0: 'Mario Kart Savvy',
 																																																																				_1: {
 																																																																					ctor: '::',
-																																																																					_0: 'Moé',
+																																																																					_0: 'Melancholy',
 																																																																					_1: {
 																																																																						ctor: '::',
-																																																																						_0: 'Multitasking',
+																																																																						_0: '‘Memento’ Rating',
 																																																																						_1: {
 																																																																							ctor: '::',
-																																																																							_0: 'Mystery',
+																																																																							_0: 'Mettle',
 																																																																							_1: {
 																																																																								ctor: '::',
-																																																																								_0: 'Naïveté',
+																																																																								_0: 'Mischief',
 																																																																								_1: {
 																																																																									ctor: '::',
-																																																																									_0: 'Nonchalance',
+																																																																									_0: 'Moé',
 																																																																									_1: {
 																																																																										ctor: '::',
-																																																																										_0: 'Optimism',
+																																																																										_0: 'Multitasking',
 																																																																										_1: {
 																																																																											ctor: '::',
-																																																																											_0: 'Patience',
+																																																																											_0: 'Mystery',
 																																																																											_1: {
 																																																																												ctor: '::',
-																																																																												_0: 'Pep',
+																																																																												_0: 'Naïveté',
 																																																																												_1: {
 																																																																													ctor: '::',
-																																																																													_0: 'Persistence',
+																																																																													_0: 'Nonchalance',
 																																																																													_1: {
 																																																																														ctor: '::',
-																																																																														_0: 'Playfulness',
+																																																																														_0: 'Optimism',
 																																																																														_1: {
 																																																																															ctor: '::',
-																																																																															_0: 'Processor Speed',
+																																																																															_0: 'Patience',
 																																																																															_1: {
 																																																																																ctor: '::',
-																																																																																_0: 'Puns',
+																																																																																_0: 'Penmanship',
 																																																																																_1: {
 																																																																																	ctor: '::',
-																																																																																	_0: 'Rarity',
+																																																																																	_0: 'Pep',
 																																																																																	_1: {
 																																																																																		ctor: '::',
-																																																																																		_0: 'Rhyme',
+																																																																																		_0: 'Persistence',
 																																																																																		_1: {
 																																																																																			ctor: '::',
-																																																																																			_0: 'Riddle Solving',
+																																																																																			_0: 'Playfulness',
 																																																																																			_1: {
 																																																																																				ctor: '::',
-																																																																																				_0: 'Serenity',
+																																																																																				_0: 'Processor Speed',
 																																																																																				_1: {
 																																																																																					ctor: '::',
-																																																																																					_0: 'Shader Quality',
+																																																																																					_0: 'Puns',
 																																																																																					_1: {
 																																																																																						ctor: '::',
-																																																																																						_0: 'Shyness',
+																																																																																						_0: 'Rarity',
 																																																																																						_1: {
 																																																																																							ctor: '::',
-																																																																																							_0: 'Signal Strength',
+																																																																																							_0: 'Rhyme',
 																																																																																							_1: {
 																																																																																								ctor: '::',
-																																																																																								_0: 'Sincerity',
+																																																																																								_0: 'Riddle Solving',
 																																																																																								_1: {
 																																																																																									ctor: '::',
-																																																																																									_0: 'Sleepiness',
+																																																																																									_0: 'Serenity',
 																																																																																									_1: {
 																																																																																										ctor: '::',
-																																																																																										_0: 'Slipperiness',
+																																																																																										_0: 'Shader Quality',
 																																																																																										_1: {
 																																																																																											ctor: '::',
-																																																																																											_0: 'Solubility',
+																																																																																											_0: 'Shyness',
 																																																																																											_1: {
 																																																																																												ctor: '::',
-																																																																																												_0: 'Special Defense',
+																																																																																												_0: 'Signal Strength',
 																																																																																												_1: {
 																																																																																													ctor: '::',
-																																																																																													_0: 'Spice Tolerance',
+																																																																																													_0: 'Sincerity',
 																																																																																													_1: {
 																																																																																														ctor: '::',
-																																																																																														_0: 'Spoiledness',
+																																																																																														_0: 'Sleepiness',
 																																																																																														_1: {
 																																																																																															ctor: '::',
-																																																																																															_0: 'Spunk',
+																																																																																															_0: 'Slipperiness',
 																																																																																															_1: {
 																																																																																																ctor: '::',
-																																																																																																_0: 'Squishiness',
+																																																																																																_0: 'Solubility',
 																																																																																																_1: {
 																																																																																																	ctor: '::',
-																																																																																																	_0: 'Stars',
+																																																																																																	_0: 'Special Defense',
 																																																																																																	_1: {
 																																																																																																		ctor: '::',
-																																																																																																		_0: 'Stickiness',
+																																																																																																		_0: 'Spice Tolerance',
 																																																																																																		_1: {
 																																																																																																			ctor: '::',
-																																																																																																			_0: 'Storage Capacity',
+																																																																																																			_0: 'Spoiledness',
 																																																																																																			_1: {
 																																																																																																				ctor: '::',
-																																																																																																				_0: 'Stress',
+																																																																																																				_0: 'Spunk',
 																																																																																																				_1: {
 																																																																																																					ctor: '::',
-																																																																																																					_0: 'Swimming',
+																																																																																																					_0: 'Squishiness',
 																																																																																																					_1: {
 																																																																																																						ctor: '::',
-																																																																																																						_0: 'Teleport Control',
+																																																																																																						_0: 'Stars',
 																																																																																																						_1: {
 																																																																																																							ctor: '::',
-																																																																																																							_0: 'Temperature',
+																																																																																																							_0: 'Stickiness',
 																																																																																																							_1: {
 																																																																																																								ctor: '::',
-																																																																																																								_0: 'Tenderness',
+																																																																																																								_0: 'Storage Capacity',
 																																																																																																								_1: {
 																																																																																																									ctor: '::',
-																																																																																																									_0: 'Texture Detail',
+																																																																																																									_0: 'Stress',
 																																																																																																									_1: {
 																																																																																																										ctor: '::',
-																																																																																																										_0: 'Top Speed',
+																																																																																																										_0: 'Swimming',
 																																																																																																										_1: {
 																																																																																																											ctor: '::',
-																																																																																																											_0: 'Trustworthiness',
+																																																																																																											_0: 'Teleport Control',
 																																																																																																											_1: {
 																																																																																																												ctor: '::',
-																																																																																																												_0: 'Tsundere-ness',
+																																																																																																												_0: 'Temperature',
 																																																																																																												_1: {
 																																																																																																													ctor: '::',
-																																																																																																													_0: 'Valor',
+																																																																																																													_0: 'Tenderness',
 																																																																																																													_1: {
 																																																																																																														ctor: '::',
-																																																																																																														_0: 'Vigor',
+																																																																																																														_0: 'Texture Detail',
 																																																																																																														_1: {
 																																																																																																															ctor: '::',
-																																																																																																															_0: 'Vim',
+																																																																																																															_0: 'Ticklishness',
 																																																																																																															_1: {
 																																																																																																																ctor: '::',
-																																																																																																																_0: 'Viscosity',
+																																																																																																																_0: 'Top Speed',
 																																																																																																																_1: {
 																																																																																																																	ctor: '::',
-																																																																																																																	_0: 'Whimsy',
+																																																																																																																	_0: 'Trustworthiness',
 																																																																																																																	_1: {
 																																																																																																																		ctor: '::',
-																																																																																																																		_0: 'Wisdom',
+																																																																																																																		_0: 'Tsundere-ness',
 																																																																																																																		_1: {
 																																																																																																																			ctor: '::',
-																																																																																																																			_0: 'Wittiness',
+																																																																																																																			_0: 'Valor',
 																																																																																																																			_1: {
 																																																																																																																				ctor: '::',
-																																																																																																																				_0: 'Wordiness',
+																																																																																																																				_0: 'Vigor',
 																																																																																																																				_1: {
 																																																																																																																					ctor: '::',
-																																																																																																																					_0: 'XP Level',
+																																																																																																																					_0: 'Vim',
 																																																																																																																					_1: {
 																																																																																																																						ctor: '::',
-																																																																																																																						_0: 'Zeal',
-																																																																																																																						_1: {ctor: '[]'}
+																																																																																																																						_0: 'Viscosity',
+																																																																																																																						_1: {
+																																																																																																																							ctor: '::',
+																																																																																																																							_0: 'Whimsy',
+																																																																																																																							_1: {
+																																																																																																																								ctor: '::',
+																																																																																																																								_0: 'Wisdom',
+																																																																																																																								_1: {
+																																																																																																																									ctor: '::',
+																																																																																																																									_0: 'Wittiness',
+																																																																																																																									_1: {
+																																																																																																																										ctor: '::',
+																																																																																																																										_0: 'Wordiness',
+																																																																																																																										_1: {
+																																																																																																																											ctor: '::',
+																																																																																																																											_0: 'XP Level',
+																																																																																																																											_1: {
+																																																																																																																												ctor: '::',
+																																																																																																																												_0: 'Zeal',
+																																																																																																																												_1: {ctor: '[]'}
+																																																																																																																											}
+																																																																																																																										}
+																																																																																																																									}
+																																																																																																																								}
+																																																																																																																							}
+																																																																																																																						}
 																																																																																																																					}
 																																																																																																																				}
 																																																																																																																			}
@@ -12142,6 +12381,58 @@ var _lynn$wordpet$Stats$names = {
 	}
 };
 
+var _lynn$wordpet$Util_Random$trySatisfy = F3(
+	function (tries, predicate, gen) {
+		return _elm_lang$core$Native_Utils.eq(tries, 0) ? gen : A2(
+			_mgold$elm_random_pcg$Random_Pcg$andThen,
+			function (result) {
+				return predicate(result) ? _mgold$elm_random_pcg$Random_Pcg$constant(result) : A3(_lynn$wordpet$Util_Random$trySatisfy, tries - 1, predicate, gen);
+			},
+			gen);
+	});
+var _lynn$wordpet$Util_Random$pickOut = function (xs) {
+	return A2(
+		_mgold$elm_random_pcg$Random_Pcg$map,
+		function (i) {
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_elm_community$list_extra$List_Extra$getAt, i, xs),
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(_elm_lang$core$List$take, i, xs),
+					A2(_elm_lang$core$List$drop, i + 1, xs))
+			};
+		},
+		A2(
+			_mgold$elm_random_pcg$Random_Pcg$int,
+			0,
+			_elm_lang$core$List$length(xs) - 1));
+};
+var _lynn$wordpet$Util_Random$shuffle = function (xs) {
+	return A2(
+		_mgold$elm_random_pcg$Random_Pcg$andThen,
+		function (t) {
+			var _p0 = t;
+			if ((_p0.ctor === '_Tuple2') && (_p0._0.ctor === 'Just')) {
+				return A2(
+					_mgold$elm_random_pcg$Random_Pcg$map,
+					F2(
+						function (x, y) {
+							return {ctor: '::', _0: x, _1: y};
+						})(_p0._0._0),
+					_lynn$wordpet$Util_Random$shuffle(_p0._1));
+			} else {
+				return _mgold$elm_random_pcg$Random_Pcg$constant(
+					{ctor: '[]'});
+			}
+		},
+		_lynn$wordpet$Util_Random$pickOut(xs));
+};
+var _lynn$wordpet$Util_Random$oneOf = function (xs) {
+	return _mgold$elm_random_pcg$Random_Pcg$choices(
+		A2(_elm_lang$core$List$map, _mgold$elm_random_pcg$Random_Pcg$constant, xs));
+};
+
 var _lynn$wordpet$Critter$shape = function (c) {
 	var _p0 = A2(
 		_elm_lang$core$List$filter,
@@ -12246,44 +12537,6 @@ var _lynn$wordpet$Critter$eating = F2(
 				parts: A3(_lynn$wordpet$Critter$change, 'eyes', sprite, c.parts)
 			});
 	});
-var _lynn$wordpet$Critter$pickOut = function (xs) {
-	return A2(
-		_mgold$elm_random_pcg$Random_Pcg$map,
-		function (i) {
-			return {
-				ctor: '_Tuple2',
-				_0: A2(_elm_community$list_extra$List_Extra$getAt, i, xs),
-				_1: A2(
-					_elm_lang$core$Basics_ops['++'],
-					A2(_elm_lang$core$List$take, i, xs),
-					A2(_elm_lang$core$List$drop, i + 1, xs))
-			};
-		},
-		A2(
-			_mgold$elm_random_pcg$Random_Pcg$int,
-			0,
-			_elm_lang$core$List$length(xs) - 1));
-};
-var _lynn$wordpet$Critter$shuffle = function (xs) {
-	return A2(
-		_mgold$elm_random_pcg$Random_Pcg$andThen,
-		function (t) {
-			var _p4 = t;
-			if ((_p4.ctor === '_Tuple2') && (_p4._0.ctor === 'Just')) {
-				return A2(
-					_mgold$elm_random_pcg$Random_Pcg$map,
-					F2(
-						function (x, y) {
-							return {ctor: '::', _0: x, _1: y};
-						})(_p4._0._0),
-					_lynn$wordpet$Critter$shuffle(_p4._1));
-			} else {
-				return _mgold$elm_random_pcg$Random_Pcg$constant(
-					{ctor: '[]'});
-			}
-		},
-		_lynn$wordpet$Critter$pickOut(xs));
-};
 var _lynn$wordpet$Critter$statsGenerator = function (count) {
 	return A2(
 		_mgold$elm_random_pcg$Random_Pcg$andThen,
@@ -12305,7 +12558,7 @@ var _lynn$wordpet$Critter$statsGenerator = function (count) {
 					count,
 					A2(_mgold$elm_random_pcg$Random_Pcg$int, 2, 5)));
 		},
-		_lynn$wordpet$Critter$shuffle(_lynn$wordpet$Stats$names));
+		_lynn$wordpet$Util_Random$shuffle(_lynn$wordpet$Stats$names));
 };
 var _lynn$wordpet$Critter$pick = F2(
 	function (p, options) {
@@ -12315,8 +12568,7 @@ var _lynn$wordpet$Critter$pick = F2(
 				return (_elm_lang$core$Native_Utils.cmp(x, p) < 1) ? A2(
 					_mgold$elm_random_pcg$Random_Pcg$map,
 					_elm_lang$core$Maybe$Just,
-					_mgold$elm_random_pcg$Random_Pcg$choices(
-						A2(_elm_lang$core$List$map, _mgold$elm_random_pcg$Random_Pcg$constant, options))) : _mgold$elm_random_pcg$Random_Pcg$constant(_elm_lang$core$Maybe$Nothing);
+					_lynn$wordpet$Util_Random$oneOf(options)) : _mgold$elm_random_pcg$Random_Pcg$constant(_elm_lang$core$Maybe$Nothing);
 			},
 			A2(_mgold$elm_random_pcg$Random_Pcg$float, 0, 1));
 	});
@@ -13457,6 +13709,15 @@ var _robertjlooby$elm_generic_dict$GenericDict$diff = F2(
 			t2);
 	});
 
+var _lynn$wordpet$Util_String$words = function (s) {
+	var _p0 = _elm_lang$core$String$words(s);
+	if (((_p0.ctor === '::') && (_p0._0 === '')) && (_p0._1.ctor === '[]')) {
+		return {ctor: '[]'};
+	} else {
+		return _p0;
+	}
+};
+
 var _lynn$wordpet$Markov$pickWord = function (tally) {
 	var pickWith = F2(
 		function (wordcounts, index) {
@@ -13649,6 +13910,114 @@ var _lynn$wordpet$Markov$addSample = F4(
 		};
 		return A3(_elm_lang$core$List$foldl, tally, model, entries);
 	});
+var _lynn$wordpet$Markov$decodeModel = function (stringToWord) {
+	var stringToMaybeWord = function (s) {
+		var _p13 = s;
+		if (_p13 === '') {
+			return _elm_lang$core$Maybe$Nothing;
+		} else {
+			return _elm_lang$core$Maybe$Just(
+				stringToWord(_p13));
+		}
+	};
+	var decodeWordTally = A2(
+		_elm_lang$core$Json_Decode$map,
+		function (_p14) {
+			return A2(
+				_robertjlooby$elm_generic_dict$GenericDict$fromList,
+				_lynn$wordpet$Markov$compareMaybes,
+				A2(
+					_elm_lang$core$List$map,
+					function (_p15) {
+						var _p16 = _p15;
+						return {
+							ctor: '_Tuple2',
+							_0: stringToMaybeWord(_p16._0),
+							_1: _p16._1
+						};
+					},
+					_elm_lang$core$Dict$toList(_p14)));
+		},
+		_elm_lang$core$Json_Decode$dict(_elm_lang$core$Json_Decode$int));
+	var decodeTally = A3(
+		_elm_lang$core$Json_Decode$map2,
+		F2(
+			function (a, b) {
+				return {total: a, wordTally: b};
+			}),
+		A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int),
+		A2(_elm_lang$core$Json_Decode$index, 1, decodeWordTally));
+	var stringToNgram = function (_p17) {
+		return A2(
+			_elm_lang$core$List$map,
+			stringToWord,
+			_lynn$wordpet$Util_String$words(_p17));
+	};
+	return A2(
+		_elm_lang$core$Json_Decode$map,
+		_elm_community$dict_extra$Dict_Extra$mapKeys(stringToNgram),
+		_elm_lang$core$Json_Decode$dict(decodeTally));
+};
+var _lynn$wordpet$Markov$encodeGDict = F3(
+	function (showK, encodeV, dict) {
+		return _elm_lang$core$Json_Encode$object(
+			A2(
+				_elm_lang$core$List$map,
+				function (_p18) {
+					var _p19 = _p18;
+					return {
+						ctor: '_Tuple2',
+						_0: showK(_p19._0),
+						_1: encodeV(_p19._1)
+					};
+				},
+				_robertjlooby$elm_generic_dict$GenericDict$toList(dict)));
+	});
+var _lynn$wordpet$Markov$encodeDict = F3(
+	function (showK, encodeV, dict) {
+		return _elm_lang$core$Json_Encode$object(
+			A2(
+				_elm_lang$core$List$map,
+				function (_p20) {
+					var _p21 = _p20;
+					return {
+						ctor: '_Tuple2',
+						_0: showK(_p21._0),
+						_1: encodeV(_p21._1)
+					};
+				},
+				_elm_lang$core$Dict$toList(dict)));
+	});
+var _lynn$wordpet$Markov$encodeModel = F2(
+	function (wordToString, model) {
+		var ngramToString = function (_p22) {
+			return A2(
+				_elm_lang$core$String$join,
+				' ',
+				A2(_elm_lang$core$List$map, wordToString, _p22));
+		};
+		var maybeWordToString = function (_p23) {
+			return A2(
+				_elm_lang$core$Maybe$withDefault,
+				'',
+				A2(_elm_lang$core$Maybe$map, wordToString, _p23));
+		};
+		var encodeWordTally = A2(_lynn$wordpet$Markov$encodeGDict, maybeWordToString, _elm_lang$core$Json_Encode$int);
+		var encodeTally = function (_p24) {
+			var _p25 = _p24;
+			return _elm_lang$core$Json_Encode$list(
+				{
+					ctor: '::',
+					_0: _elm_lang$core$Json_Encode$int(_p25.total),
+					_1: {
+						ctor: '::',
+						_0: encodeWordTally(_p25.wordTally),
+						_1: {ctor: '[]'}
+					}
+				});
+		};
+		return A3(_lynn$wordpet$Markov$encodeDict, ngramToString, encodeTally, model);
+	});
 var _lynn$wordpet$Markov$Tally = F2(
 	function (a, b) {
 		return {wordTally: a, total: b};
@@ -13663,6 +14032,7 @@ var _lynn$wordpet$Model$isHatched = function (model) {
 var _lynn$wordpet$Model$busy = function (model) {
 	return _elm_community$maybe_extra$Maybe_Extra$isJust(model.eating);
 };
+var _lynn$wordpet$Model$hatchTimer = 6;
 var _lynn$wordpet$Model$Model = F9(
 	function (a, b, c, d, e, f, g, h, i) {
 		return {critter: a, babbles: b, speech: c, babbleTimer: d, hatched: e, meal: f, eating: g, voice: h, dizziness: i};
@@ -13678,14 +14048,19 @@ var _lynn$wordpet$Model$Enduring = function (a) {
 	return {ctor: 'Enduring', _0: a};
 };
 var _lynn$wordpet$Model$Calm = {ctor: 'Calm'};
-var _lynn$wordpet$Model$initial = {critter: _lynn$wordpet$Critter$dummy, babbles: _elm_lang$core$Dict$empty, speech: _elm_lang$core$Dict$empty, babbleTimer: 6, hatched: _elm_lang$core$Maybe$Nothing, meal: '', eating: _elm_lang$core$Maybe$Nothing, voice: '', dizziness: _lynn$wordpet$Model$Calm};
+var _lynn$wordpet$Model$initial = {critter: _lynn$wordpet$Critter$dummy, babbles: _elm_lang$core$Dict$empty, speech: _elm_lang$core$Dict$empty, babbleTimer: _lynn$wordpet$Model$hatchTimer, hatched: _elm_lang$core$Maybe$Nothing, meal: '', eating: _elm_lang$core$Maybe$Nothing, voice: '', dizziness: _lynn$wordpet$Model$Calm};
 
+var _lynn$wordpet$Msg$ReceivedFileContents = function (a) {
+	return {ctor: 'ReceivedFileContents', _0: a};
+};
 var _lynn$wordpet$Msg$ReceivedNormalize = function (a) {
 	return {ctor: 'ReceivedNormalize', _0: a};
 };
 var _lynn$wordpet$Msg$ReceivedSentences = function (a) {
 	return {ctor: 'ReceivedSentences', _0: a};
 };
+var _lynn$wordpet$Msg$StartUpload = {ctor: 'StartUpload'};
+var _lynn$wordpet$Msg$DownloadModel = {ctor: 'DownloadModel'};
 var _lynn$wordpet$Msg$SetCritter = function (a) {
 	return {ctor: 'SetCritter', _0: a};
 };
@@ -13905,28 +14280,21 @@ var _lynn$wordpet$Speech$handleSpeech = function (voiceType) {
 			A2(_mgold$elm_random_pcg$Random_Pcg$int, 2, 9));
 	}
 };
-var _lynn$wordpet$Speech$namePredicate = F2(
+var _lynn$wordpet$Speech$isGoodName = F2(
 	function (model, babble) {
 		var name = A2(_elm_lang$core$String$dropRight, 1, babble);
 		return (_elm_lang$core$Native_Utils.cmp(
 			_elm_lang$core$String$length(name),
 			4) > -1) && (!A2(_elm_lang$core$List$member, name, _lynn$wordpet$Bad$words));
 	});
-var _lynn$wordpet$Speech$trySatisfy = F3(
-	function (tries, predicate, gen) {
-		return _elm_lang$core$Native_Utils.eq(tries, 0) ? gen : A2(
-			_mgold$elm_random_pcg$Random_Pcg$andThen,
-			function (result) {
-				return predicate(result) ? _mgold$elm_random_pcg$Random_Pcg$constant(result) : A3(_lynn$wordpet$Speech$trySatisfy, tries - 1, predicate, gen);
-			},
-			gen);
-	});
 var _lynn$wordpet$Speech$babbleText = function (model) {
 	var randomRepeat = F3(
 		function (i, j, s) {
 			return A2(
 				_mgold$elm_random_pcg$Random_Pcg$map,
-				A2(_elm_lang$core$Basics$flip, _elm_lang$core$String$repeat, s),
+				function (count) {
+					return A2(_elm_lang$core$String$repeat, count, s);
+				},
 				A2(_mgold$elm_random_pcg$Random_Pcg$int, i, j));
 		});
 	var punctuation = function () {
@@ -13934,13 +14302,16 @@ var _lynn$wordpet$Speech$babbleText = function (model) {
 		if (_p2.ctor === 'Overwhelmed') {
 			var _p3 = model.critter.punctuation;
 			if (_p3 === '…') {
-				return A2(
-					_mgold$elm_random_pcg$Random_Pcg$map,
-					F2(
-						function (x, y) {
-							return A2(_elm_lang$core$Basics_ops['++'], x, y);
-						})('…'),
-					A3(randomRepeat, 1, 2, '!'));
+				return _lynn$wordpet$Util_Random$oneOf(
+					{
+						ctor: '::',
+						_0: '…!',
+						_1: {
+							ctor: '::',
+							_0: '…!!',
+							_1: {ctor: '[]'}
+						}
+					});
 			} else {
 				return A3(randomRepeat, 2, 3, _p3);
 			}
@@ -13964,7 +14335,7 @@ var _lynn$wordpet$Speech$babbleText = function (model) {
 var _lynn$wordpet$Speech$babbleTextSatisfying = F2(
 	function (predicate, model) {
 		return A3(
-			_lynn$wordpet$Speech$trySatisfy,
+			_lynn$wordpet$Util_Random$trySatisfy,
 			100,
 			predicate,
 			_lynn$wordpet$Speech$babbleText(model));
@@ -13974,7 +14345,7 @@ var _lynn$wordpet$Speech$babble = function (model) {
 		_mgold$elm_random_pcg$Random_Pcg$generate,
 		_lynn$wordpet$Msg$Vocalize(_lynn$wordpet$Msg$Babble),
 		(_lynn$wordpet$Model$isHatched(model) ? _lynn$wordpet$Speech$babbleText : _lynn$wordpet$Speech$babbleTextSatisfying(
-			_lynn$wordpet$Speech$namePredicate(model)))(model));
+			_lynn$wordpet$Speech$isGoodName(model)))(model));
 };
 var _lynn$wordpet$Speech$maybeBabble = function (model) {
 	return _elm_lang$core$Native_Utils.eq(model.babbleTimer, 0) ? _lynn$wordpet$Speech$babble(model) : _elm_lang$core$Platform_Cmd$none;
@@ -14138,45 +14509,35 @@ var _lynn$wordpet$ChompAnimation$chomp = F2(
 					_elm_lang$core$String$isEmpty(remaining) ? _lynn$wordpet$Model$Swallowing : _lynn$wordpet$Model$Chomping(_p1._0));
 			}
 		}();
-		return A2(
-			_elm_lang$core$Platform_Cmd_ops['!'],
-			_elm_lang$core$Native_Utils.update(
-				model,
-				{
-					meal: remaining,
-					eating: A2(
-						_elm_lang$core$Maybe$map,
-						function (state) {
-							return {timer: model.critter.chompDuration, state: state};
-						},
-						newState),
-					voice: _elm_community$maybe_extra$Maybe_Extra$isJust(newState) ? '♫' : ''
-				}),
-			function () {
-				var _p2 = newState;
-				if (_p2.ctor === 'Just') {
-					return {
-						ctor: '::',
-						_0: _lynn$wordpet$SFX$play(_lynn$wordpet$SFX$Chomp),
-						_1: {ctor: '[]'}
-					};
-				} else {
-					return {
-						ctor: '::',
-						_0: _lynn$wordpet$SFX$play(
-							_lynn$wordpet$Model$isHatched(model) ? _lynn$wordpet$SFX$Gulp : (_elm_lang$core$Native_Utils.eq(model.babbleTimer, 0) ? _lynn$wordpet$SFX$Hatch : _lynn$wordpet$SFX$Rattle)),
-						_1: {
-							ctor: '::',
-							_0: _lynn$wordpet$ChompAnimation$refocusPlate,
-							_1: {
-								ctor: '::',
-								_0: _lynn$wordpet$Speech$maybeBabble(model),
-								_1: {ctor: '[]'}
-							}
-						}
-					};
-				}
-			}());
+		var commands = function () {
+			var _p2 = newState;
+			if (_p2.ctor === 'Just') {
+				return {
+					ctor: '::',
+					_0: _lynn$wordpet$SFX$play(_lynn$wordpet$SFX$Chomp),
+					_1: {ctor: '[]'}
+				};
+			} else {
+				return {
+					ctor: '::',
+					_0: _lynn$wordpet$ChompAnimation$finishEating(model),
+					_1: {ctor: '[]'}
+				};
+			}
+		}();
+		var newModel = _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				meal: remaining,
+				eating: A2(
+					_elm_lang$core$Maybe$map,
+					function (state) {
+						return {timer: model.critter.chompDuration, state: state};
+					},
+					newState),
+				voice: _elm_community$maybe_extra$Maybe_Extra$isJust(newState) ? '♫' : ''
+			});
+		return A2(_elm_lang$core$Platform_Cmd_ops['!'], newModel, commands);
 	});
 var _lynn$wordpet$ChompAnimation$tick = F2(
 	function (diff, model) {
@@ -14202,6 +14563,18 @@ var _lynn$wordpet$ChompAnimation$tick = F2(
 		}
 	});
 
+var _lynn$wordpet$File$download = _elm_lang$core$Native_Platform.outgoingPort(
+	'download',
+	function (v) {
+		return [v._0, v._1];
+	});
+var _lynn$wordpet$File$upload = _elm_lang$core$Native_Platform.outgoingPort(
+	'upload',
+	function (v) {
+		return null;
+	});
+var _lynn$wordpet$File$receiveContents = _elm_lang$core$Native_Platform.incomingPort('receiveContents', _elm_lang$core$Json_Decode$string);
+
 var _lynn$wordpet$FoodProcessor$isLetter = function (c) {
 	return !_elm_lang$core$Native_Utils.eq(
 		_elm_lang$core$Char$toUpper(c),
@@ -14226,29 +14599,200 @@ var _lynn$wordpet$FoodProcessor$process = function (_p1) {
 		});
 };
 
-var _lynn$wordpet$Util$addCmd = function (ours) {
-	return _elm_lang$core$Tuple$mapSecond(
-		function (theirs) {
-			return _elm_lang$core$Platform_Cmd$batch(
+var _lynn$wordpet$Serialize$decodeCritter = A7(
+	_elm_lang$core$Json_Decode$map6,
+	F6(
+		function (a, b, c, d, e, f) {
+			return {palette: a, parts: b, dizzy: c, chompDuration: d, stats: e, punctuation: f};
+		}),
+	A2(_elm_lang$core$Json_Decode$field, 'palette', _elm_lang$core$Json_Decode$string),
+	A2(
+		_elm_lang$core$Json_Decode$field,
+		'parts',
+		_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string)),
+	A2(_elm_lang$core$Json_Decode$field, 'dizzy', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode$field, 'chompDuration', _elm_lang$core$Json_Decode$float),
+	A2(
+		_elm_lang$core$Json_Decode$field,
+		'stats',
+		A2(
+			_elm_lang$core$Json_Decode$map,
+			_elm_lang$core$Dict$toList,
+			_elm_lang$core$Json_Decode$dict(_elm_lang$core$Json_Decode$int))),
+	A2(_elm_lang$core$Json_Decode$field, 'punctuation', _elm_lang$core$Json_Decode$string));
+var _lynn$wordpet$Serialize$toChar = function (s) {
+	var _p0 = _elm_lang$core$String$uncons(s);
+	if (_p0.ctor === 'Just') {
+		return _p0._0._0;
+	} else {
+		return _elm_lang$core$Native_Utils.chr('☹');
+	}
+};
+var _lynn$wordpet$Serialize$decodeModel = function () {
+	var initial = _lynn$wordpet$Model$initial;
+	return A5(
+		_elm_lang$core$Json_Decode$map4,
+		F4(
+			function (a, b, c, d) {
+				return _elm_lang$core$Native_Utils.update(
+					initial,
+					{critter: a, babbles: b, speech: c, hatched: d});
+			}),
+		A2(_elm_lang$core$Json_Decode$field, 'critter', _lynn$wordpet$Serialize$decodeCritter),
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'babbles',
+			_lynn$wordpet$Markov$decodeModel(_lynn$wordpet$Serialize$toChar)),
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'speech',
+			_lynn$wordpet$Markov$decodeModel(_elm_lang$core$Basics$identity)),
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'hatched',
+			_elm_lang$core$Json_Decode$nullable(_elm_lang$core$Json_Decode$string)));
+}();
+var _lynn$wordpet$Serialize$encodeCritter = function (_p1) {
+	var _p2 = _p1;
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'palette',
+				_1: _elm_lang$core$Json_Encode$string(_p2.palette)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'parts',
+					_1: _elm_lang$core$Json_Encode$list(
+						A2(_elm_lang$core$List$map, _elm_lang$core$Json_Encode$string, _p2.parts))
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'dizzy',
+						_1: _elm_lang$core$Json_Encode$string(_p2.dizzy)
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'chompDuration',
+							_1: _elm_lang$core$Json_Encode$float(_p2.chompDuration)
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'stats',
+								_1: _elm_lang$core$Json_Encode$object(
+									A2(
+										_elm_lang$core$List$map,
+										function (_p3) {
+											var _p4 = _p3;
+											return {
+												ctor: '_Tuple2',
+												_0: _p4._0,
+												_1: _elm_lang$core$Json_Encode$int(_p4._1)
+											};
+										},
+										_p2.stats))
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'punctuation',
+									_1: _elm_lang$core$Json_Encode$string(_p2.punctuation)
+								},
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		});
+};
+var _lynn$wordpet$Serialize$maybeEncode = F2(
+	function (encoder, m) {
+		var _p5 = m;
+		if (_p5.ctor === 'Just') {
+			return encoder(_p5._0);
+		} else {
+			return _elm_lang$core$Json_Encode$null;
+		}
+	});
+var _lynn$wordpet$Serialize$encodeModel = function (_p6) {
+	var _p7 = _p6;
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'critter',
+				_1: _lynn$wordpet$Serialize$encodeCritter(_p7.critter)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'babbles',
+					_1: A2(_lynn$wordpet$Markov$encodeModel, _elm_lang$core$String$fromChar, _p7.babbles)
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'speech',
+						_1: A2(_lynn$wordpet$Markov$encodeModel, _elm_lang$core$Basics$identity, _p7.speech)
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'hatched',
+							_1: A2(_lynn$wordpet$Serialize$maybeEncode, _elm_lang$core$Json_Encode$string, _p7.hatched)
+						},
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
+};
+
+var _lynn$wordpet$Util_Cmd$addCmd = F2(
+	function (ours, _p0) {
+		var _p1 = _p0;
+		return {
+			ctor: '_Tuple2',
+			_0: _p1._0,
+			_1: _elm_lang$core$Platform_Cmd$batch(
 				{
 					ctor: '::',
 					_0: ours,
 					_1: {
 						ctor: '::',
-						_0: theirs,
+						_0: _p1._1,
 						_1: {ctor: '[]'}
 					}
-				});
-		});
+				})
+		};
+	});
+var _lynn$wordpet$Util_Cmd$joinCmds = function (_p2) {
+	var _p3 = _p2;
+	return A2(_lynn$wordpet$Util_Cmd$addCmd, _p3._1, _p3._0);
 };
-var _lynn$wordpet$Util$joinCmds = function (_p0) {
-	var _p1 = _p0;
-	return A2(_lynn$wordpet$Util$addCmd, _p1._1, _p1._0);
-};
-var _lynn$wordpet$Util$cmdThen = F2(
-	function (f, a) {
-		return _lynn$wordpet$Util$joinCmds(
-			A2(_elm_lang$core$Tuple$mapFirst, f, a));
+var _lynn$wordpet$Util_Cmd$cmdThen = F2(
+	function (f, _p4) {
+		var _p5 = _p4;
+		return A2(
+			_lynn$wordpet$Util_Cmd$addCmd,
+			_p5._1,
+			f(_p5._0));
 	});
 
 var _mdgriffith$stylish_elephants$Style_Internal_Model$StyleSheet = F3(
@@ -27462,6 +28006,18 @@ var _lynn$wordpet$View$onEnter = function (msg) {
 			},
 			_mdgriffith$stylish_elephants$Element_Events$keyCode));
 };
+var _lynn$wordpet$View$Button = {ctor: 'Button'};
+var _lynn$wordpet$View$exportButton = function (_p0) {
+	return A3(
+		_mdgriffith$stylish_elephants$Element$button,
+		_lynn$wordpet$View$Button,
+		{
+			ctor: '::',
+			_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$DownloadModel),
+			_1: {ctor: '[]'}
+		},
+		_mdgriffith$stylish_elephants$Element$text('Export'));
+};
 var _lynn$wordpet$View$StatValue = {ctor: 'StatValue'};
 var _lynn$wordpet$View$StatName = {ctor: 'StatName'};
 var _lynn$wordpet$View$StatBox = {ctor: 'StatBox'};
@@ -27612,16 +28168,16 @@ var _lynn$wordpet$View$renderCritter = function (model) {
 			return _lynn$wordpet$Critter$egg(
 				_elm_lang$core$Basics$toFloat(6 - model.babbleTimer) / 6.0);
 		} else {
-			var _p0 = model.eating;
-			if (_p0.ctor === 'Just') {
-				return _lynn$wordpet$Critter$eating(_p0._0.timer);
+			var _p1 = model.eating;
+			if (_p1.ctor === 'Just') {
+				return _lynn$wordpet$Critter$eating(_p1._0.timer);
 			} else {
-				var _p1 = model.dizziness;
-				if (_p1.ctor === 'Overwhelmed') {
+				var _p2 = model.dizziness;
+				if (_p2.ctor === 'Overwhelmed') {
 					return _lynn$wordpet$Critter$dizzy;
 				} else {
-					var _p2 = model.meal;
-					if (_p2 === '') {
+					var _p3 = model.meal;
+					if (_p3 === '') {
 						return _elm_lang$core$Basics$identity;
 					} else {
 						return _lynn$wordpet$Critter$drool;
@@ -27692,8 +28248,8 @@ var _lynn$wordpet$View$inputArea = function (model) {
 				_1: {ctor: '[]'}
 			};
 			var canFeed = (!busy) && (!_elm_lang$core$Native_Utils.eq(model.meal, ''));
-			var _p3 = model.hatched;
-			if (_p3.ctor === 'Nothing') {
+			var _p4 = model.hatched;
+			if (_p4.ctor === 'Nothing') {
 				return {
 					ctor: '::',
 					_0: A2(
@@ -27702,7 +28258,7 @@ var _lynn$wordpet$View$inputArea = function (model) {
 							ctor: '::',
 							_0: A3(
 								_mdgriffith$stylish_elephants$Element$button,
-								_lynn$wordpet$View$None,
+								_lynn$wordpet$View$Button,
 								{
 									ctor: '::',
 									_0: _mdgriffith$stylish_elephants$Element_Attributes$padding(4),
@@ -27782,7 +28338,7 @@ var _lynn$wordpet$View$inputArea = function (model) {
 						ctor: '::',
 						_0: A3(
 							_mdgriffith$stylish_elephants$Element$button,
-							_lynn$wordpet$View$None,
+							_lynn$wordpet$View$Button,
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								canFeed ? {
@@ -27802,8 +28358,8 @@ var _lynn$wordpet$View$inputArea = function (model) {
 			}
 		}());
 };
-var _lynn$wordpet$View$statRow = function (_p4) {
-	var _p5 = _p4;
+var _lynn$wordpet$View$statRow = function (_p5) {
+	var _p6 = _p5;
 	var stars = function (n) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
@@ -27822,7 +28378,7 @@ var _lynn$wordpet$View$statRow = function (_p4) {
 					_0: _mdgriffith$stylish_elephants$Element_Attributes$alignLeft,
 					_1: {ctor: '[]'}
 				},
-				_mdgriffith$stylish_elephants$Element$text(_p5._0)),
+				_mdgriffith$stylish_elephants$Element$text(_p6._0)),
 			_1: {
 				ctor: '::',
 				_0: A3(
@@ -27834,7 +28390,7 @@ var _lynn$wordpet$View$statRow = function (_p4) {
 						_1: {ctor: '[]'}
 					},
 					_mdgriffith$stylish_elephants$Element$text(
-						stars(_p5._1))),
+						stars(_p6._1))),
 				_1: {ctor: '[]'}
 			}
 		},
@@ -27850,12 +28406,12 @@ var _lynn$wordpet$View$statRow = function (_p4) {
 			_mdgriffith$stylish_elephants$Element$empty));
 };
 var _lynn$wordpet$View$statBox = function (model) {
-	var _p6 = function () {
-		var _p7 = model.hatched;
-		if (_p7.ctor === 'Just') {
+	var _p7 = function () {
+		var _p8 = model.hatched;
+		if (_p8.ctor === 'Just') {
 			return {
 				ctor: '_Tuple2',
-				_0: _p7._0,
+				_0: _p8._0,
 				_1: A2(_elm_lang$core$List$map, _lynn$wordpet$View$statRow, model.critter.stats)
 			};
 		} else {
@@ -27878,8 +28434,8 @@ var _lynn$wordpet$View$statBox = function (model) {
 			};
 		}
 	}();
-	var name = _p6._0;
-	var statRows = _p6._1;
+	var name = _p7._0;
+	var statRows = _p7._1;
 	var title = A3(
 		_mdgriffith$stylish_elephants$Element$el,
 		_lynn$wordpet$View$H2,
@@ -28131,7 +28687,19 @@ var _lynn$wordpet$View$stylesheet = _mdgriffith$stylish_elephants$Style$styleShe
 													_mdgriffith$stylish_elephants$Style$style,
 													_lynn$wordpet$View$StatValue,
 													{ctor: '[]'}),
-												_1: {ctor: '[]'}
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_mdgriffith$stylish_elephants$Style$style,
+														_lynn$wordpet$View$Button,
+														{
+															ctor: '::',
+															_0: _mdgriffith$stylish_elephants$Style_Color$background(
+																A4(_elm_lang$core$Color$rgba, 255, 255, 255, 0.7)),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
 											}
 										}
 									}
@@ -28241,7 +28809,51 @@ var _lynn$wordpet$View$view = function (model) {
 						_1: {
 							ctor: '::',
 							_0: _lynn$wordpet$View$inputArea(model),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: A3(
+									_mdgriffith$stylish_elephants$Element$row,
+									_lynn$wordpet$View$None,
+									{
+										ctor: '::',
+										_0: _mdgriffith$stylish_elephants$Element_Attributes$spacing(10),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: A3(
+											_mdgriffith$stylish_elephants$Element$button,
+											_lynn$wordpet$View$Button,
+											{
+												ctor: '::',
+												_0: _mdgriffith$stylish_elephants$Element_Attributes$padding(4),
+												_1: {
+													ctor: '::',
+													_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$DownloadModel),
+													_1: {ctor: '[]'}
+												}
+											},
+											_mdgriffith$stylish_elephants$Element$text('Export')),
+										_1: {
+											ctor: '::',
+											_0: A3(
+												_mdgriffith$stylish_elephants$Element$button,
+												_lynn$wordpet$View$Button,
+												{
+													ctor: '::',
+													_0: _mdgriffith$stylish_elephants$Element_Attributes$padding(4),
+													_1: {
+														ctor: '::',
+														_0: _mdgriffith$stylish_elephants$Element_Events$onClick(_lynn$wordpet$Msg$StartUpload),
+														_1: {ctor: '[]'}
+													}
+												},
+												_mdgriffith$stylish_elephants$Element$text('Import')),
+											_1: {ctor: '[]'}
+										}
+									}),
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				})));
@@ -28293,7 +28905,11 @@ var _lynn$wordpet$Main$subscriptions = function (model) {
 					_1: {
 						ctor: '::',
 						_0: _lynn$wordpet$Compromise$receiveNormalize(_lynn$wordpet$Msg$ReceivedNormalize),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: _lynn$wordpet$File$receiveContents(_lynn$wordpet$Msg$ReceivedFileContents),
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			}
@@ -28321,7 +28937,7 @@ var _lynn$wordpet$Main$update = F2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					model,
 					{ctor: '[]'}) : A2(
-					_lynn$wordpet$Util$cmdThen,
+					_lynn$wordpet$Util_Cmd$cmdThen,
 					_lynn$wordpet$ChompAnimation$setup,
 					_lynn$wordpet$Speech$train(model));
 			case 'ChompTick':
@@ -28333,7 +28949,7 @@ var _lynn$wordpet$Main$update = F2(
 					{ctor: '[]'});
 			case 'Pet':
 				return _lynn$wordpet$Model$isHatched(model) ? A2(
-					_lynn$wordpet$Util$cmdThen,
+					_lynn$wordpet$Util_Cmd$cmdThen,
 					_lynn$wordpet$Speech$speak,
 					_lynn$wordpet$Petting$pet(model)) : A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
@@ -28349,7 +28965,7 @@ var _lynn$wordpet$Main$update = F2(
 					});
 			case 'Vocalize':
 				return A2(
-					_lynn$wordpet$Util$addCmd,
+					_lynn$wordpet$Util_Cmd$addCmd,
 					_lynn$wordpet$Speech$handleSpeech(_p0._0),
 					_lynn$wordpet$Main$maybeHatch(
 						_elm_lang$core$Native_Utils.update(
@@ -28369,12 +28985,40 @@ var _lynn$wordpet$Main$update = F2(
 						model,
 						{critter: _p0._0}),
 					{ctor: '[]'});
+			case 'DownloadModel':
+				var json = A2(
+					_elm_lang$core$Json_Encode$encode,
+					0,
+					_lynn$wordpet$Serialize$encodeModel(model));
+				var filename = A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(_elm_lang$core$Maybe$withDefault, 'wordpet', model.hatched),
+					'.dna');
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					{
+						ctor: '::',
+						_0: _lynn$wordpet$File$download(
+							{ctor: '_Tuple2', _0: filename, _1: json}),
+						_1: {ctor: '[]'}
+					});
+			case 'StartUpload':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					{
+						ctor: '::',
+						_0: _lynn$wordpet$File$upload(
+							{ctor: '_Tuple0'}),
+						_1: {ctor: '[]'}
+					});
 			case 'ReceivedSentences':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					A2(_lynn$wordpet$Speech$trainSpeech, _p0._0, model),
 					{ctor: '[]'});
-			default:
+			case 'ReceivedNormalize':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					A2(
@@ -28382,6 +29026,19 @@ var _lynn$wordpet$Main$update = F2(
 						_elm_lang$core$Basics$toString(_p0._0),
 						model),
 					{ctor: '[]'});
+			default:
+				var _p1 = A2(_elm_lang$core$Json_Decode$decodeString, _lynn$wordpet$Serialize$decodeModel, _p0._0);
+				if (_p1.ctor === 'Ok') {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_p1._0,
+						{ctor: '[]'});
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						A2(_elm_lang$core$Debug$log, _p1._0, model),
+						{ctor: '[]'});
+				}
 		}
 	});
 var _lynn$wordpet$Main$main = _elm_lang$html$Html$program(
