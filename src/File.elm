@@ -6,5 +6,8 @@ port download : (String, String) -> Cmd msg
 {-| Open a file upload dialog. -}
 port upload : () -> Cmd msg
 
+{-| Request to prefetch an image at the given href. -}
+port prefetch : String -> Cmd msg
+
 {-| Port for received file contents. -}
 port receiveContents : (String -> msg) -> Sub msg

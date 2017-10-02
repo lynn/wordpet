@@ -56,7 +56,7 @@ update msg model = case msg of
   ResetBabbleTimer t ->
     { model | babbleTimer = t } ! []
   SetCritter c ->
-    { model | critter = c } ! []
+    let newModel = { model | critter = c } in newModel ! [prefetchCritterParts newModel]
   DownloadModel ->
     let
       filename = Maybe.withDefault "wordpet" model.hatched ++ ".dna"
@@ -71,8 +71,8 @@ update msg model = case msg of
     Debug.log (toString normalizedText) model ! [] -- TODO (currently unused?)
   ReceivedFileContents contents ->
     case Json.Decode.decodeString Serialize.decodeModel contents of
-      Ok newModel -> newModel ! []
-      Err err -> Debug.log err model ! [] -- TODO don't fail silently!
+      Ok newModel -> newModel ! [prefetchCritterParts newModel]
+      Err err -> { model | voice = "Import error: " ++ err } ! []
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -98,3 +98,12 @@ maybeHatch model =
       -- `model.voice` will be punctuated, so strip that first.
       let name = String.dropRight 1 model.voice
       in { model | hatched = Just name } ! [Animation.trigger "hatch"]
+
+prefetchCritterParts : Model -> Cmd Msg
+prefetchCritterParts model =
+  let
+    parts = model.critter.parts ++ ["crack1", "crack2", "crack3",
+      "dizzy0", "dizzy1", "drool0", "eat0", "eat1", "heart0", "surprise0"]
+    paths = parts |> List.map (\p -> "assets/critter/" ++ model.critter.palette ++ "/" ++ p ++ ".png")
+  in
+    Cmd.batch (List.map File.prefetch paths)

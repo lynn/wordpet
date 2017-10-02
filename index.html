@@ -100,7 +100,15 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
 
     app.ports.upload.subscribe(function() {
         document.getElementById('import-critter').click();
-    })
+    });
+
+    app.ports.prefetch.subscribe(function(href) {
+        var prefetchLink = document.createElement("link");
+        prefetchLink.href = href;
+        prefetchLink.rel = "prefetch";
+        prefetchLink.as = "image";
+        document.head.appendChild(prefetchLink);
+    });
 
     // I stole this from here. https://stackoverflow.com/a/42583090/257418
     function onFileLoad(elementId, event) {
