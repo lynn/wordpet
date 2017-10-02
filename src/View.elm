@@ -212,7 +212,7 @@ inputArea model = column None [] <|
         , value = model.meal
         , label = Input.placeholder { text = "Think of a word.", label = Input.hiddenLabel "Word to teach" }
         , options = options }
-        |> onRight [ button Button [ padding 4, onClick Feed ] (text "➤") ]
+        |> within [ button Button [ padding 4, onClick Feed, alignRight ] (text "➤") ]
       ]
     Just name ->
       [ Input.multiline None
@@ -266,12 +266,8 @@ view model =
       , inputArea model
       , row None [spacing 10]
         [ button Button [padding 4, onClick (ReceivedLoadModel "")] (text "New Game")
-        , button Button [padding 4, onClick DownloadModel] (text "Export")
+        , when (Model.isHatched model) <|
+            button Button [padding 4, onClick DownloadModel] (text "Export")
         , button Button [padding 4, onClick StartUpload] (text "Import")
         ]
-      -- , paragraph None []
-      --   [ text (Serialize.encodeModel model |> Json.Encode.encode 0)
-      --   , text (Serialize.encodeModel model |> Json.Encode.encode 0 |> Json.Decode.decodeString Serialize.decodeModel |> toString)
-      --   , text (toString model)
-      --   ]
       ]
