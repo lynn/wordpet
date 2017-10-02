@@ -4,5 +4,5 @@ elm-stuff
 repl-temp-*
 
 # elm-make output
-main.js
+# main.js
 view.js
