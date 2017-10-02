@@ -36,6 +36,7 @@ type Styles
   | StatBox
   | StatName
   | StatValue
+  | Button
 
 type Variations
   = Invisible
@@ -96,6 +97,9 @@ stylesheet =
       ]
     , style StatName []
     , style StatValue []
+    , style Button
+      [ Color.background (Color.rgba 255 255 255 0.7)
+      ]
     ]
 
 
@@ -208,7 +212,7 @@ inputArea model = column None [] <|
         , value = model.meal
         , label = Input.placeholder { text = "Think of a word.", label = Input.hiddenLabel "Word to teach" }
         , options = options }
-        |> onRight [ button None [ padding 4, onClick Feed ] (text "➤") ]
+        |> onRight [ button Button [ padding 4, onClick Feed ] (text "➤") ]
       ]
     Just name ->
       [ Input.multiline None
@@ -217,7 +221,7 @@ inputArea model = column None [] <|
         , value = model.meal
         , label = Input.placeholder { text = "What's for dinner? Copy paragraphs from anywhere you like, and click “Feed.” Then try petting your critter.", label = Input.hiddenLabel "Paragraphs to feed" }
         , options = options }
-      , button None
+      , button Button
         ((if canFeed then [onClick Feed] else []) ++ [padding 4])
         (text "Feed!") ]
 
@@ -247,7 +251,7 @@ statBox model =
 
 exportButton : Model -> MyElement
 exportButton _ =
-  button None
+  button Button
     [onClick DownloadModel]
     (text "Export")
 
@@ -260,8 +264,10 @@ view model =
         |> onLeft [ statBox model ]
         |> onRight [ speechBubbleHolder model |> within [ speechBubbleTail, speechBubble model ] ]
       , inputArea model
-      , exportButton model
-      , button None [onClick StartUpload] (text "Import")
+      , row None [spacing 10]
+        [ button Button [padding 4, onClick DownloadModel] (text "Export")
+        , button Button [padding 4, onClick StartUpload] (text "Import")
+        ]
       -- , paragraph None []
       --   [ text (Serialize.encodeModel model |> Json.Encode.encode 0)
       --   , text (Serialize.encodeModel model |> Json.Encode.encode 0 |> Json.Decode.decodeString Serialize.decodeModel |> toString)
