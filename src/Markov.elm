@@ -122,21 +122,26 @@ addSample n normalize words model =
       Dict.update ngram (Just << markTally next << withDefaultTally)
     -- Normalize the n-gram used as keys, leaving the tallied word untouched.
     entries = windows n normalPairs
-      |> List.map
-        (  Tuple.mapFirst (List.map Tuple.first)
-        >> Tuple.mapSecond (Maybe.map Tuple.second) )
+      |> List.map (\(xs, y) -> (List.map Tuple.first xs, Maybe.map Tuple.second y))
     normalPairs = List.map (\ word -> (normalize word, word)) words
   in
     List.foldl tally model entries
 
 
 -- Random word generator, using the distribution given by a Tally.
+-- The generator yields either:
+--
+--     * `Just (Just word)` to signal the next word in the chain,
+--     * `Just Nothing` to signal the end of the chain,
+--     * `Nothing` if the Tally is empty (this generally shouldn't happen).
+--
 pickWord : Tally -> Generator (Maybe (Maybe String))
 pickWord tally =
   let
     frequencies : List (Maybe String, Int)
     frequencies = GDict.toList tally.wordTally
 
+    -- Pick the `index`-th element from the run-length encoded list `wordcounts`.
     pickWith : List (Maybe String, Int) -> Int -> Maybe (Maybe String)
     pickWith wordcounts index = case wordcounts of
       ((word, count) :: tail) ->
@@ -168,17 +173,16 @@ step n normalize model ngram =
     slide next = (next, List.drop slideAmount ngram ++ [normalize next])
   in case Dict.get ngram model of
     Nothing -> Random.constant Nothing
-    Just tally -> pickWord tally
-      |> Random.map (Maybe.join >> Maybe.map slide)
+    Just tally -> pickWord tally |> Random.map (Maybe.join >> Maybe.map slide)
 
 -- Generate a whole sentence! This is just a wrapper around `step`.
 walk : Int -> (String -> String) -> Model -> Generator (List String)
 walk n normalize model =
   let
     go ngram = step n normalize model ngram |> Random.andThen continue
-
-    continue nextState = case nextState of
-      Nothing -> Random.constant []
-      Just (word, ngram) -> go ngram |> Random.map ((::) word)
+    continue nextState =
+      case nextState of
+        Nothing -> Random.constant []
+        Just (word, ngram) -> go ngram |> Random.map ((::) word)
   in
     go []
