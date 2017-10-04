@@ -8,8 +8,8 @@ import Maybe.Extra exposing (isJust, isNothing)
 
 type alias Model =
   { critter : Critter
-  , babbles : Markov.Model Char
-  , speech  : Markov.Model String
+  , babbles : Markov.Model
+  , speech : Markov.Model
   , babbleTimer : Int
   , hatched : Maybe String -- name when hatched
   , meal : String
@@ -36,7 +36,7 @@ initial : Model
 initial =
   { critter = Critter.dummy
   , babbles = Dict.empty
-  , speech  = Dict.empty
+  , speech = Dict.empty
   , babbleTimer = hatchTimer
   , hatched = Nothing
   , meal = ""

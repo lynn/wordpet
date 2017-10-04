@@ -18,7 +18,7 @@ import Petting exposing (isOverwhelmed)
 trainBabbles : Model -> Model
 trainBabbles model =
   { model | babbles =
-    Markov.addSample 1 identity (String.toList model.meal) model.babbles }
+    Markov.addSample 1 identity (String.split "" model.meal) model.babbles }
 
 -- Train the speech model on the given list of sentences.
 -- TODO: need to normalize
@@ -71,7 +71,7 @@ maybeBabble model = if model.babbleTimer == 0
 babbleText : Model -> Random.Generator String
 babbleText model =
   let
-    bab = Random.map String.fromList (Markov.walk 1 identity model.babbles)
+    bab = Random.map (String.join "") (Markov.walk 1 identity model.babbles)
     randomRepeat i j s = Random.int i j |> Random.map (\count -> String.repeat count s)
     punctuation =
       case model.dizziness of

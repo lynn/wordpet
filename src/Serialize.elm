@@ -39,8 +39,8 @@ encodeModel : Model -> E.Value
 encodeModel {critter,babbles,speech,babbleTimer,hatched} =
   E.object
     [ ("critter", encodeCritter critter)
-    , ("babbles", Markov.encodeModel String.fromChar babbles)
-    , ("speech", Markov.encodeModel identity speech)
+    , ("babbles", Markov.encodeModel babbles)
+    , ("speech", Markov.encodeModel speech)
     , ("babbleTimer", E.int babbleTimer)
     , ("hatched", maybeEncode E.string hatched)
     ]
@@ -59,19 +59,13 @@ encodeCritter {palette, parts, dizzy, chompDuration, stats, punctuation} =
     , ("punctuation", E.string punctuation)
     ]
 
-toChar : String -> Char
-toChar s =
-  case String.uncons s of
-    Just (c, _) -> c
-    Nothing -> '☹'
-
 decodeModel : D.Decoder Model
 decodeModel =
   let initial = Model.initial in
   D.map5 (\a b c d e -> { initial | critter = a, babbles = b, speech = c, babbleTimer = d, hatched = e })
     (D.field "critter" decodeCritter)
-    (D.field "babbles" (Markov.decodeModel toChar))
-    (D.field "speech" (Markov.decodeModel identity))
+    (D.field "babbles" Markov.decodeModel)
+    (D.field "speech" Markov.decodeModel)
     (D.field "babbleTimer" (D.int))
     (D.field "hatched" (D.nullable D.string))
 

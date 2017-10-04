@@ -90,7 +90,6 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
     app.ports.download.subscribe(function(args) {
         var filename = args[0], contents = args[1];
         var element = document.createElement('a');
-        console.log('filename', filename, 'contents', contents);
         element.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(contents));
         element.setAttribute('download', filename);
         element.style.display = 'none';
@@ -113,14 +112,12 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
 
     // Save model to local storage.
     app.ports.saveModel.subscribe(function(json) {
-        console.log('saveModel', json);
         localStorage.setItem('model', json);
     });
 
     // Load model from local storage, if possible.
     app.ports.loadModel.subscribe(function() {
         var json = localStorage.getItem('model');
-        console.log('loadModel', json);
         app.ports.receiveLoadModel.send(json || '');
     });
 

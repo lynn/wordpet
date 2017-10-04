@@ -11,16 +11,16 @@ import Json.Decode as D
 import Json.Encode as E
 import Util.String
 
--- An "Ngram String" is just a list of Strings, for example.
-type alias Ngram a = List a
+-- An Ngram is just a list of Strings.
+type alias Ngram = List String
 
--- Model: given an n-gram of words, how frequently does each possible
+-- Model: given an n-gram, how frequently does each possible
 -- next word (or end of sample; represented by Nothing) occur?
-type alias Model word = Dict (Ngram word) (Tally (Maybe word))
+type alias Model = Dict Ngram Tally
 
 -- Tally: store frequency distribution of words, for random sampling.
-type alias Tally word =
-  { wordTally : GenericDict word Int
+type alias Tally =
+  { wordTally : GenericDict (Maybe String) Int
   , total : Int }
 
 encodeDict : (comparable -> String) -> (v -> E.Value) -> Dict comparable v -> E.Value
@@ -35,26 +35,26 @@ encodeGDict showK encodeV dict =
   |> List.map (\(k,v) -> (showK k, encodeV v))
   |> E.object
 
-encodeModel : (comparable -> String) -> Model comparable -> E.Value
-encodeModel wordToString model =
+encodeModel : Model -> E.Value
+encodeModel model =
   let
-    maybeWordToString = Maybe.map wordToString >> Maybe.withDefault ""
-    ngramToString = List.map wordToString >> String.join " "
-    encodeWordTally = encodeGDict maybeWordToString E.int
+    tallyKeyToString = Maybe.withDefault ""
+    ngramToString = String.join " "
+    encodeWordTally = encodeGDict tallyKeyToString E.int
     encodeTally {wordTally, total} = E.list [E.int total, encodeWordTally wordTally]
   in
     encodeDict ngramToString encodeTally model
 
-decodeModel : (String -> comparable) -> D.Decoder (Model comparable)
-decodeModel stringToWord =
+decodeModel : D.Decoder Model
+decodeModel =
   let
-    stringToNgram = Util.String.words >> List.map stringToWord
-    stringToMaybeWord s = case s of
+    stringToTallyKey s = case s of
       "" -> Nothing
-      s -> Just (stringToWord s)
+      s -> Just s
+    stringToNgram = Util.String.words
     decodeWordTally =
       D.dict D.int
-      |> D.map (Dict.toList >> List.map (\(k, v) -> (stringToMaybeWord k, v)) >> GDict.fromList compareMaybes)
+      |> D.map (Dict.toList >> List.map (\(k, v) -> (stringToTallyKey k, v)) >> GDict.fromList compareMaybes)
     decodeTally =
       D.map2 (\a b -> {total = a, wordTally = b})
         (D.index 0 D.int)
@@ -63,20 +63,20 @@ decodeModel stringToWord =
     D.dict decodeTally |> D.map (Dict.mapKeys stringToNgram)
 
 -- An empty Tally value.
-blankTally : (word -> word -> Order) -> Tally word
-blankTally comparison =
-  { wordTally = GDict.empty comparison
+blankTally : Tally
+blankTally =
+  { wordTally = GDict.empty compareMaybes
   , total = 0 }
 
-withDefaultTally : (word -> word -> Order) -> Maybe (Tally word) -> Tally word
-withDefaultTally = Maybe.withDefault << blankTally
+withDefaultTally : Maybe Tally -> Tally
+withDefaultTally = Maybe.withDefault blankTally
 
 -- A comparison function on Maybe values.
 compareMaybes : Maybe comparable -> Maybe comparable -> Order
 compareMaybes a b = compare (Maybe.toList a) (Maybe.toList b)
 
 -- Add a tally mark for a given word!
-markTally : word -> Tally word -> Tally word
+markTally : Maybe String -> Tally -> Tally
 markTally word tally =
   let
     -- Function to update an Int field with.
@@ -100,7 +100,7 @@ markTally word tally =
 --          , (["a",    "tiny", "test"], Nothing)
 --          ]
 
-windows : Int -> List word -> List (Ngram word, Maybe word)
+windows : Int -> List a -> List (List a, Maybe a)
 windows n words =
   let
     initial = List.map (format << flip List.splitAt words) (List.range 0 (n - 1))
@@ -115,12 +115,11 @@ windows n words =
 
 -- Scan over a list of words and tally up word frequencies following each
 -- n-gram, for a given n, adding them to the transition table.
-addSample : Int -> (comparable -> comparable) -> List comparable
-  -> Model comparable -> Model comparable
+addSample : Int -> (String -> String) -> List String -> Model -> Model
 addSample n normalize words model =
   let
     tally (ngram, next) =
-      Dict.update ngram (Just << markTally next << withDefaultTally compareMaybes)
+      Dict.update ngram (Just << markTally next << withDefaultTally)
     -- Normalize the n-gram used as keys, leaving the tallied word untouched.
     entries = windows n normalPairs
       |> List.map
@@ -132,13 +131,13 @@ addSample n normalize words model =
 
 
 -- Random word generator, using the distribution given by a Tally.
-pickWord : Tally word -> Generator (Maybe word)
+pickWord : Tally -> Generator (Maybe (Maybe String))
 pickWord tally =
   let
-    frequencies : List (word, Int)
+    frequencies : List (Maybe String, Int)
     frequencies = GDict.toList tally.wordTally
 
-    pickWith : List (word, Int) -> Int -> Maybe word
+    pickWith : List (Maybe String, Int) -> Int -> Maybe (Maybe String)
     pickWith wordcounts index = case wordcounts of
       ((word, count) :: tail) ->
         if index < count
@@ -162,8 +161,7 @@ pickWord tally =
 --   * Just (next word, new n-gram), signifying that generation will continue, or
 --   * Nothing, signifying the end of the generated text.
 --
-step : Int -> (comparable -> comparable) -> Model comparable -> Ngram comparable
-  -> Generator (Maybe (comparable, Ngram comparable))
+step : Int -> (String -> String) -> Model -> Ngram -> Generator (Maybe (String, Ngram))
 step n normalize model ngram =
   let
     slideAmount = max 0 (List.length ngram - n + 1)
@@ -174,8 +172,7 @@ step n normalize model ngram =
       |> Random.map (Maybe.join >> Maybe.map slide)
 
 -- Generate a whole sentence! This is just a wrapper around `step`.
-walk : Int -> (comparable -> comparable) -> Model comparable
-  -> Generator (List comparable)
+walk : Int -> (String -> String) -> Model -> Generator (List String)
 walk n normalize model =
   let
     go ngram = step n normalize model ngram |> Random.andThen continue

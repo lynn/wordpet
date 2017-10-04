@@ -108,7 +108,7 @@ stylesheet =
 critterLayer : String -> String -> MyElement
 critterLayer palette part =
   let
-    imageUrl = "url('assets/critter/" ++ palette ++ "/" ++ part ++ ".png')"
+    imageUrl = if palette == "" then "none" else "url('assets/critter/" ++ palette ++ "/" ++ part ++ ".png')"
     -- Non-moving parts.
     isStatic = List.any (\k -> part |> contains k) ["legs", "shadow", "egg", "crack", "surprise", "heart"]
   in el None
