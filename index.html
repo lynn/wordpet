@@ -52,7 +52,7 @@ div[class^="speech-bubble-holder"]>div:nth-of-type(2)>div {
 <script>
     var app = Elm.Main.fullscreen();
     app.ports.sentences.subscribe(function(text) {
-        var output = nlp(text).sentences().list.map(function(x) { return x.out('text').trim(); });
+        var output = nlp(text).sentences().out('array');
         app.ports.receiveSentences.send(output);
     });
     app.ports.normalize.subscribe(function(text) {
